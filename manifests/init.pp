@@ -1,18 +1,34 @@
 # Class: epfl_sso
 #
 # This class describes integrating a Linux computer into the EPFL directory services (LDAP and Kerberos)
-class epfl_sso() {
+#
+# === Parameters:
+#
+# $allowed_users_and_groups::  access.conf(5)-style ACL, e.g. "user1 user2 (group1) (group2)"
+class epfl_sso(
+  $allowed_users_and_groups = ''
+  ) {
   package { ["sssd", "sssd-ldap"] :
     ensure => present
   } ->
   file { "/etc/sssd/sssd.conf" :
     ensure => present,
     content => template("epfl_sso/sssd.conf.erb"),
+    owner => root,
+    group => root,
     mode  => 600
   } ->
   service { "sssd":
     ensure => running
   }
+
+  file { "/etc/security/access.conf":
+    ensure => present,
+    content => template("epfl_sso/access.conf.erb"),
+    owner => root,
+    group => root,
+    mode  => 644
+  } 
 
   class { 'nsswitch':
     passwd => ['compat', 'sss'],
