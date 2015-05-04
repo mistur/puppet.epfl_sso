@@ -72,4 +72,8 @@ class epfl_sso() {
     control   => 'optional',
     module    => 'pam_sss.so',
   })
+
+  # We could envision making the following optional, depending on a
+  # class enable parameter:
+  class { "epfl_sso::mkhomedir": }
 }
