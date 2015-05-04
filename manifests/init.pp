@@ -22,13 +22,9 @@ class epfl_sso(
     ensure => running
   }
 
-  file { "/etc/security/access.conf":
-    ensure => present,
-    content => template("epfl_sso/access.conf.erb"),
-    owner => root,
-    group => root,
-    mode  => 644
-  } 
+  class { "epfl_sso::access":
+    allowed_users_and_groups => $allowed_users_and_groups
+  }
 
   class { 'nsswitch':
     passwd => ['compat', 'sss'],
