@@ -18,7 +18,6 @@ class epfl_sso() {
     passwd => ['compat', 'sss'],
     group => ['compat', 'sss'],
     netgroup => ['files', 'sss'],
-    sudoers => ['files', 'sss']
   }
 
   # Mimic "authconfig --enablesssd --enablesssdauth --updateall" using
