@@ -1,0 +1,38 @@
+[sssd]
+config_file_version = 2
+domains = intranet.epfl.ch
+services = nss, pam
+debug_level = 0
+
+[nss]
+
+[pam]
+
+[domain/intranet.epfl.ch]
+# Unless you know you need referrals, turn them off
+ldap_referrals = false
+# Uncomment if you need offline logins
+# cache_credentials = true
+enumerate = false
+
+id_provider = ldap
+auth_provider = krb5
+chpass_provider = krb5
+access_provider = ldap
+
+ldap_uri = ldap://scoldap.epfl.ch/
+
+ldap_schema = rfc2307
+
+ldap_user_search_base = O=epfl,C=ch
+ldap_group_search_base = O=epfl,C=ch
+ldap_group_object_class = EPFLGroupOfPersons
+
+ldap_access_order = expire
+ldap_account_expire_policy = ad
+ldap_force_upper_case_realm = true
+
+krb5_realm = INTRANET.EPFL.CH
+
+# Probably required with sssd 1.8.x and newer
+krb5_canonicalize = false
