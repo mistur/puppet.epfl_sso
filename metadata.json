@@ -14,11 +14,11 @@
     },
     {
       "name": "herculesteam-augeasproviders_pam",
-      "version_requirement": ">= 0"
+      "version_requirement": ">= 0.0.0"
     },  
     {
       "name": "trlinkin-nsswitch",
-      "version_requirement": ">= 0"
+      "version_requirement": ">= 0.0.0"
     }
   ]
 }
