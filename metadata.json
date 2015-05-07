@@ -1,18 +1,17 @@
 {
-  "name": "epfl_sso",
+  "name": "epflsti/epfl_sso",
   "version": "0.0.1",
-  "author": "domq",
-  "summary": "UNKNOWN",
-  "license": "Apache License, Version 2.0",
-  "source": "UNKNOWN",
-  "project_page": "https://github.com/saz/puppet-ntp",
-  "issues_url": null,
-  "operatingsystem_support": [
-    {
-      "operatingsystem": "RedHat"
-    }
-  ],
+  "author": "epflsti",
+  "summary": "UNIX single sign-on using EPFL's LDAP and Kerberos servers",
+  "license": "MIT",
+  "source": "https://github.com/epfl-sti/puppet.epfl_sso",
+  "project_page": "https://github.com/epfl-sti/puppet.epfl_sso",
+  "issues_url": "https://github.com/epfl-sti/puppet.epfl_sso/issues",
   "dependencies": [
+    {
+        "name":"puppetlabs-stdlib",
+        "version_requirement":">= 1.0.0"
+    },
     {
       "name": "herculesteam-augeasproviders_pam",
       "version_requirement": ">= 0"
