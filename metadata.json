@@ -1,12 +1,12 @@
 {
-  "name": "epflsti/epfl_sso",
+  "name": "domq/epfl_sso",
   "version": "0.0.1",
-  "author": "epflsti",
+  "author": "domq",
   "summary": "UNIX single sign-on using EPFL's LDAP and Kerberos servers",
   "license": "MIT",
   "source": "https://github.com/epfl-sti/puppet.epfl_sso",
-  "project_page": "https://github.com/epfl-sti/puppet.epfl_sso",
   "issues_url": "https://github.com/epfl-sti/puppet.epfl_sso/issues",
+  "project_page": "https://github.com/epfl-sti/puppet.epfl_sso",
   "dependencies": [
     {
         "name":"puppetlabs-stdlib",
