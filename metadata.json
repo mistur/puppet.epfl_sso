@@ -1,6 +1,6 @@
 {
   "name": "domq/epfl_sso",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "author": "domq",
   "summary": "UNIX single sign-on using EPFL's LDAP and Kerberos servers",
   "license": "MIT",
