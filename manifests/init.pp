@@ -7,10 +7,17 @@
 #
 # === Parameters:
 #
-# $allowed_users_and_groups::  access.conf(5)-style ACL, e.g. "user1 user2 (group1) (group2)"
+# $allowed_users_and_groups::  access.conf(5)-style ACL, e.g.
+#                              "user1 user2 (group1) (group2)"
+# $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in nsswitch.conf.
+#                              Set to false if using e.g. domq/clusterssh
 class epfl_sso(
-  $allowed_users_and_groups = ''
+  $allowed_users_and_groups = '',
+  $manage_nsswitch_netgroup = true,
   ) {
+  validate_string($allowed_usersa_and_groups)
+  validate_bool($manage_nsswitch_netgroup)
+
   package { ["sssd", "sssd-ldap"] :
     ensure => present
   } ->
@@ -29,10 +36,14 @@ class epfl_sso(
     allowed_users_and_groups => $allowed_users_and_groups
   }
 
-  class { 'nsswitch':
-    passwd => ['compat', 'sss'],
-    group => ['compat', 'sss'],
-    netgroup => ['files', 'sss'],
+  name_service {['passwd', 'group']:
+    lookup => ['compat', 'sss']
+  }
+
+  if ($manage_netgroup) {
+    name_service { 'netgroup':
+      lookup => ['files', 'sss']
+    }
   }
 
   # Mimic "authconfig --enablesssd --enablesssdauth --updateall" using
