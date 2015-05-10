@@ -10,7 +10,7 @@
 # $allowed_users_and_groups::  access.conf(5)-style ACL, e.g.
 #                              "user1 user2 (group1) (group2)"
 # $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in nsswitch.conf.
-#                              Set to false if using e.g. domq/clusterssh
+#
 class epfl_sso(
   $allowed_users_and_groups = '',
   $manage_nsswitch_netgroup = true,
