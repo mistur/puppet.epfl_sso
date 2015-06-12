@@ -40,6 +40,12 @@ class epfl_sso(
     lookup => ['compat', 'sss']
   }
 
+  # This is necessary for RH7 and CentOS 7, and probably
+  # does not hurt for older versions:
+  name_service { 'initgroups':
+    lookup => ['files', 'sss']
+  }
+
   if ($manage_netgroup) {
     name_service { 'netgroup':
       lookup => ['files', 'sss']
