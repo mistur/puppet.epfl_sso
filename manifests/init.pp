@@ -15,24 +15,24 @@ class epfl_sso(
   $allowed_users_and_groups = '',
   $manage_nsswitch_netgroup = true,
   ) {
-  validate_string($allowed_usersa_and_groups)
+  validate_string($allowed_users_and_groups)
   validate_bool($manage_nsswitch_netgroup)
 
-  package { ["sssd", "sssd-ldap"] :
+  package { ['sssd', 'sssd-ldap'] :
     ensure => present
   } ->
-  file { "/etc/sssd/sssd.conf" :
-    ensure => present,
-    content => template("epfl_sso/sssd.conf.erb"),
-    owner => root,
-    group => root,
-    mode  => 600
+  file { '/etc/sssd/sssd.conf' :
+    ensure  => present,
+    content => template('epfl_sso/sssd.conf.erb'),
+    owner   => root,
+    group   => root,
+    mode    => '0600'
   } ->
-  service { "sssd":
+  service { 'sssd':
     ensure => running
   }
 
-  class { "epfl_sso::access":
+  class { 'epfl_sso::access':
     allowed_users_and_groups => $allowed_users_and_groups
   }
 
@@ -46,7 +46,7 @@ class epfl_sso(
     lookup => ['files', 'sss']
   }
 
-  if ($manage_netgroup) {
+  if ($manage_nsswitch_netgroup) {
     name_service { 'netgroup':
       lookup => ['files', 'sss']
     }
@@ -107,5 +107,5 @@ class epfl_sso(
 
   # We could envision making the following optional, depending on a
   # class enable parameter:
-  class { "epfl_sso::mkhomedir": }
+  class { 'epfl_sso::mkhomedir': }
 }

@@ -8,12 +8,12 @@
 class epfl_sso::access(
   $allowed_users_and_groups = ''
   ) {
-  file { "/etc/security/access.conf":
-    ensure => present,
-    content => template("epfl_sso/access.conf.erb"),
-    owner => root,
-    group => root,
-    mode  => 644
+  file { '/etc/security/access.conf':
+    ensure  => present,
+    content => template('epfl_sso/access.conf.erb'),
+    owner   => root,
+    group   => root,
+    mode    => '0644'
   }
   # TODO: also support debian-style /etc/pam.d layout (common-{auth,account,password})
   create_resources(pam,
