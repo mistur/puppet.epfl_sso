@@ -3,7 +3,7 @@
 # Automatically create home directories upon login of a new user
 class epfl_sso::mkhomedir() {
   # RedHat-only
-  package { "oddjob-mkhomedir" :
+  package { 'oddjob-mkhomedir' :
     ensure => present
   }
 
