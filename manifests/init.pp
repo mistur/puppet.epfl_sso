@@ -29,7 +29,8 @@ class epfl_sso(
     mode    => '0600'
   } ->
   service { 'sssd':
-    ensure => running
+    ensure => running,
+    enable => true
   }
 
   class { 'epfl_sso::access':
