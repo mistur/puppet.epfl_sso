@@ -9,6 +9,7 @@
 #
 # $allowed_users_and_groups::  access.conf(5)-style ACL, e.g.
 #                              "user1 user2 (group1) (group2)"
+#                              Note: if you run gdm, user gdm must have access.
 # $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in nsswitch.conf.
 #
 class epfl_sso(
