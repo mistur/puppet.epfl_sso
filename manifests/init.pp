@@ -56,7 +56,8 @@ class epfl_sso(
   # This is necessary for RH7 and CentOS 7, and probably
   # does not hurt for older versions:
   name_service { 'initgroups':
-    lookup => ['files', 'sss']
+    # https://bugzilla.redhat.com/show_bug.cgi?id=751450
+    lookup => ['files [SUCCESS=continue] sss']
   }
 
   if ($manage_nsswitch_netgroup) {
