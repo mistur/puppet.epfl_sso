@@ -9,12 +9,14 @@
 #
 # $allowed_users_and_groups::  access.conf(5)-style ACL, e.g.
 #                              "user1 user2 (group1) (group2)"
-#                              Note: if you run gdm, user gdm must have access.
-# $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in nsswitch.conf.
-#
+#                              Note: if you run gdm, user gdm must have access
+# $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in nsswitch.conf
+# $enable_mkhomedir::          Whether to automatically create users' home
+#                              directories upon first login
 class epfl_sso(
   $allowed_users_and_groups = undef,
   $manage_nsswitch_netgroup = true,
+  $enable_mkhomedir = true
   ) {
   validate_string($allowed_users_and_groups)
   validate_bool($manage_nsswitch_netgroup)
@@ -112,7 +114,7 @@ class epfl_sso(
     module    => 'pam_sss.so',
   })
 
-  # We could envision making the following optional, depending on a
-  # class enable parameter:
-  class { 'epfl_sso::mkhomedir': }
+  if ($enable_mkhomedir) {
+    class { 'epfl_sso::mkhomedir': }
+  }
 }
