@@ -39,6 +39,10 @@ class epfl_sso(
   # A properly configured clock is necessary for Kerberos:
   ensure_resource('class', 'ntp')
 
+  # When a user tries to ssh into a machine that doesn't have their shell,
+  # figuring it all out from the logs is quite a challenge.
+  ensure_resource('package', ['tcsh', 'zsh'])
+
   if ($::epfl_krb5_resolved == "false") {
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
   }
