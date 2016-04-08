@@ -39,6 +39,10 @@ class epfl_sso(
   # A properly configured clock is necessary for Kerberos:
   ensure_resource('class', 'ntp')
 
+  if ($::epfl_krb5_resolved == "false") {
+    fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
+  }
+
   if ($allowed_users_and_groups != undef) {
     class { 'epfl_sso::access':
       allowed_users_and_groups => $allowed_users_and_groups
