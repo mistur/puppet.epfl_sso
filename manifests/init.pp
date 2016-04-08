@@ -13,7 +13,7 @@
 # $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in nsswitch.conf.
 #
 class epfl_sso(
-  $allowed_users_and_groups = '',
+  $allowed_users_and_groups = undef,
   $manage_nsswitch_netgroup = true,
   ) {
   validate_string($allowed_users_and_groups)
@@ -34,8 +34,10 @@ class epfl_sso(
     enable => true
   }
 
-  class { 'epfl_sso::access':
-    allowed_users_and_groups => $allowed_users_and_groups
+  if ($allowed_users_and_groups != undef) {
+    class { 'epfl_sso::access':
+      allowed_users_and_groups => $allowed_users_and_groups
+    }
   }
 
   name_service {['passwd', 'group']:
