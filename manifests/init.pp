@@ -34,6 +34,9 @@ class epfl_sso(
     enable => true
   }
 
+  # A properly configured clock is necessary for Kerberos:
+  ensure_resource('class', 'ntp')
+
   if ($allowed_users_and_groups != undef) {
     class { 'epfl_sso::access':
       allowed_users_and_groups => $allowed_users_and_groups
