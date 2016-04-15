@@ -1,3 +1,4 @@
+# coding: utf-8
 # Class: epfl_sso
 #
 # This class describes integrating a Linux computer into the EPFL
