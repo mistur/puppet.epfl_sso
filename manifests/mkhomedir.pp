@@ -35,18 +35,22 @@ class epfl_sso::mkhomedir() {
         'mkhomedir session in system-auth' => { service => 'system-auth'},
         'mkhomedir session in password-auth' => { service => 'password-auth'}
       }
+      $pam_arguments = []
     }
     'Debian': {
       $pam_mkhomedir_session = {
-        'mkhomedir session in common-auth' => { service => 'common-auth'},
+        'mkhomedir session in common-session' => { service => 'common-session'},
+        'mkhomedir session in common-session-noninteractive' => { service => 'common-session-noninteractive'},
       }
+      $pam_arguments = ['skel=/etc/skel/', 'umask=0022']
     }
   }
   create_resources(pam, $pam_mkhomedir_session,
       {
         ensure    => present,
         type      => 'session',
-        control   => 'optional',
-        module    => 'pam_mkhomedir.so',
+        control   => 'required',
+        module    => "pam_mkhomedir.so",
+        arguments => $pam_arguments
       })
 }
