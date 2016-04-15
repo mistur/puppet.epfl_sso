@@ -74,105 +74,76 @@ class epfl_sso(
   # TODO: also support debian-style /etc/pam.d layout (common-{auth,account,password})
   case $::osfamily {
     'RedHat': {
-      create_resources(pam,
-      {
-        'sss auth in system-auth' => { service => 'system-auth'},
-        'sss auth in password-auth' => { service => 'password-auth'}
-      },
-      {
-        ensure    => present,
-        type      => 'auth',
-        control   => 'sufficient',
-        module    => 'pam_sss.so',
-        arguments => 'use_first_pass',
-        position  => 'before *[type="auth" and module="pam_deny.so"]',
-      })
-      create_resources(pam,
-      {
-        'sss account in system-auth' => { service => 'system-auth'},
-        'sss account in password-auth' => { service => 'password-auth'}
-      },
-      {
-        ensure    => present,
-        type      => 'account',
-        control   => '[default=bad success=ok user_unknown=ignore]',
-        module    => 'pam_sss.so',
-        position  => 'before *[type="account" and module="pam_permit.so"]',
-      })
-      create_resources(pam,
-      {
-        'sss password in system-auth' => { service => 'system-auth'},
-        'sss password in password-auth' => { service => 'password-auth'}
-      },
-      {
-        ensure    => present,
-        type      => 'password',
-        control   => 'sufficient',
-        module    => 'pam_sss.so',
-        arguments => 'use_authtok',
-        position  => 'before *[type="password" and module="pam_deny.so"]',
-      })
-      create_resources(pam,
-      {
-        'sss session in system-auth' => { service => 'system-auth'},
-        'sss session in password-auth' => { service => 'password-auth'}
-      },
-      {
-        ensure    => present,
-        type      => 'session',
-        control   => 'optional',
-        module    => 'pam_sss.so',
-      })
-    }
-    'Debian': {
-      create_resources(pam,
-      {
-        'sss auth in common-auth' => { service => 'common-auth'},
-      },
-      {
-        ensure    => present,
-        type      => 'auth',
-        control   => 'sufficient',
-        module    => 'pam_sss.so',
-        arguments => 'use_first_pass',
-        position  => 'before *[type="auth" and module="pam_deny.so"]',
-      })
-      create_resources(pam,
-      {
-        'sss account in common-account' => { service => 'common-account'}
-      },
-      {
-        ensure    => present,
-        type      => 'account',
-        control   => '[default=bad success=ok user_unknown=ignore]',
-        module    => 'pam_sss.so',
-        position  => 'before *[type="account" and module="pam_permit.so"]',
-      })
-      create_resources(pam,
-      {
-        'sss password in common-password' => { service => 'common-password'}
-      },
-      {
-        ensure    => present,
-        type      => 'password',
-        control   => 'sufficient',
-        module    => 'pam_sss.so',
-        arguments => 'use_authtok',
-        position  => 'before *[type="password" and module="pam_deny.so"]',
-      })
-      create_resources(pam,
-      {
-        'sss session in common-session' => { service => 'common-session-interactive'},
-        'sss session in common-session-interactive' => { service => 'common-session-interactive'}
-      },
-      {
-        ensure    => present,
-        type      => 'session',
-        control   => 'optional',
-        module    => 'pam_sss.so',
-      })
+        $pam_classes = {
+               'auth' =>  {
+                   'sss auth in system-auth' => { service => 'system-auth'},
+                   'sss auth in password-auth' => { service => 'password-auth'}
+               },
+               'account' =>  {
+                   'sss account in system-auth' => { service => 'system-auth'},
+                   'sss account in password-auth' => { service => 'password-auth'}
+               },
+               'password' =>  {
+                   'sss password in system-auth' => { service => 'system-auth'},
+                   'sss password in password-auth' => { service => 'password-auth'}
+               },
+               'session' =>  {
+                   'sss session in system-auth' => { service => 'system-auth'},
+                   'sss session in password-auth' => { service => 'password-auth'}
+               },
+        }
+     }     
+     'Debian': {
+        $pam_classes = {
+               'auth' =>  {
+                   'sss auth in common-auth' => { service => 'common-auth'},
+               },
+               'account' =>  {
+                   'sss account in common-account' => { service => 'common-account'}
+               },
+               'password' =>  {
+                   'sss password in common-password' => { service => 'common-password'}
+               },
+               'session' =>  {
+                   'sss session in common-session' => { service => 'common-session-interactive'},
+                   'sss session in common-session-interactive' => { service => 'common-session-interactive'}
+               },
+        }
     }
   }
+  create_resources(pam, $pam_classes['auth'],
+      {
+        ensure    => present,
+        type      => 'auth',
+        control   => 'sufficient',
+        module    => 'pam_sss.so',
+        arguments => 'use_first_pass',
+        position  => 'before *[type="auth" and module="pam_deny.so"]',
+      })
+  create_resources(pam, $pam_classes['account'],
+      {
+        ensure    => present,
+        type      => 'account',
+        control   => '[default=bad success=ok user_unknown=ignore]',
+        module    => 'pam_sss.so',
+        position  => 'before *[type="account" and module="pam_permit.so"]',
+      })
+  create_resources(pam, $pam_classes['password'],
+      {
+        ensure    => present,
+        type      => 'password',
+        control   => 'sufficient',
+        module    => 'pam_sss.so',
+        arguments => 'use_authtok',
+        position  => 'before *[type="password" and module="pam_deny.so"]',
+      })
+  create_resources(pam, $pam_classes['session'],
+      {
+        ensure    => present,
+        type      => 'session',
+        control   => 'optional',
+        module    => 'pam_sss.so',
+      })
 
   if ($enable_mkhomedir) {
     class { 'epfl_sso::mkhomedir': }
