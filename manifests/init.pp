@@ -29,7 +29,7 @@ class epfl_sso(
     owner   => root,
     group   => root,
     mode    => '0600'
-  } ->
+  } ~>
   service { 'sssd':
     ensure => running,
     enable => true
