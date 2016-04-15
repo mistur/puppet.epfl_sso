@@ -105,8 +105,8 @@ class epfl_sso(
                    'sss password in common-password' => { service => 'common-password'}
                },
                'session' =>  {
-                   'sss session in common-session' => { service => 'common-session-interactive'},
-                   'sss session in common-session-interactive' => { service => 'common-session-interactive'}
+                   'sss session in common-session' => { service => 'common-session'},
+                   'sss session in common-session-noninteractive' => { service => 'common-session-noninteractive'}
                },
         }
     }
