@@ -7,5 +7,5 @@ UNIX single sign-on using EPFL's LDAP and Kerberos servers
 
 ```
 puppet module install domq/epfl_sso
-puppet apply -e 'class { "epfl_sso": }'
+puppet apply -e 'class { "epfl_sso":  allowed_users_and_groups => "user1 user2 (group1) (group2)" }'
 ```
