@@ -12,7 +12,13 @@ class epfl_sso::mkhomedir() {
     }
 
     'Debian': {
-      case "${::operatingsystem} ${::operatingsystemrelease}" {
+      case "${::operatingsystem} ${::operatingsystemmajrelease}" {
+         'Ubuntu 12.04': {
+              # http://packages.ubuntu.com/search?suite=xenial&keywords=oddjob-mkhomedir
+              package { 'libpam-mkhomedir' :
+                ensure => present
+              }
+         }
          'Ubuntu 16.04': {
               # http://packages.ubuntu.com/search?suite=xenial&keywords=oddjob-mkhomedir
               package { 'oddjob-mkhomedir' :

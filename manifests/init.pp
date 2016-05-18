@@ -20,7 +20,15 @@ class epfl_sso(
   validate_string($allowed_users_and_groups)
   validate_bool($manage_nsswitch_netgroup)
 
-  package { ['sssd', 'sssd-ldap'] :
+  case "${::operatingsystem} ${::operatingsystemmajrelease}" {
+         'Ubuntu 12.04': {
+           $sssd_packages = ['sssd']
+         }
+         default: {
+           $sssd_packages = ['sssd', 'sssd-ldap']
+         }
+  }
+  package { $sssd_packages :
     ensure => present
   } ->
   file { '/etc/sssd/sssd.conf' :
