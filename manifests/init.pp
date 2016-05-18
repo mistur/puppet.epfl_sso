@@ -12,23 +12,23 @@
 # $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in nsswitch.conf
 # $enable_mkhomedir::          Whether to automatically create users' home
 #                              directories upon first login
+# $needs_nscd::                Whether to install nscd to serve as a second
+#                              layer of cache (for old distros with slow sssd)
 class epfl_sso(
   $allowed_users_and_groups = undef,
   $manage_nsswitch_netgroup = true,
-  $enable_mkhomedir = true
-  ) {
+  $enable_mkhomedir = true,
+  $needs_nscd = $::epfl_sso::params::needs_nscd
+) inherits epfl_sso::params {
+  if ( (versioncmp($::puppetversion, '3') < 0) or
+       (versioncmp($::puppetversion, '4') > 0) ) {
+    fail("Need version 3.x of Puppet.")
+  }
+
   validate_string($allowed_users_and_groups)
   validate_bool($manage_nsswitch_netgroup)
 
-  case "${::operatingsystem} ${::operatingsystemmajrelease}" {
-         'Ubuntu 12.04': {
-           $sssd_packages = ['sssd']
-         }
-         default: {
-           $sssd_packages = ['sssd', 'sssd-ldap']
-         }
-  }
-  package { $sssd_packages :
+  package { $epfl_sso::params::sssd_packages :
     ensure => present
   } ->
   file { '/etc/sssd/sssd.conf' :
@@ -41,6 +41,12 @@ class epfl_sso(
   service { 'sssd':
     ensure => running,
     enable => true
+  }
+
+  if ($needs_nscd) {
+    package { "nscd":
+      ensure => present
+    }
   }
 
   # A properly configured clock is necessary for Kerberos:
