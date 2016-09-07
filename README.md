@@ -3,7 +3,7 @@ UNIX single sign-on using EPFL's LDAP and Kerberos servers
 
 # Apply one-shot
 
-[Install Puppet standalone](https://docs.puppetlabs.com/puppet/3.8/reference/pre_install.html#standalone-puppet) then:
+[Install Puppet standalone](https://docs.puppetlabs.com/puppet/3.8/reference/pre_install.html#standalone-puppet) then, as `root`:
 
 ```
 puppet module install domq/epfl_sso
