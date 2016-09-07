@@ -54,7 +54,9 @@ class epfl_sso(
 
   # When a user tries to ssh into a machine that doesn't have their shell,
   # figuring it all out from the logs is quite a challenge.
-  ensure_resource('package', ['tcsh', 'zsh'])
+  # Note: EPFL's default shell can be changed here:
+  #       https://cadiwww.epfl.ch/cgi-bin/accountprefs/
+  ensure_resource('package', ['tcsh', 'zsh', 'ash', 'bsh', 'csh'])
 
   if ($::epfl_krb5_resolved == "false") {
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
@@ -106,7 +108,7 @@ class epfl_sso(
                    'sss session in password-auth' => { service => 'password-auth'}
                },
         }
-     }     
+     }
      'Debian': {
         $pam_classes = {
                'auth' =>  {
