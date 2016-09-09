@@ -87,7 +87,6 @@ class epfl_sso(
 
   # Mimic "authconfig --enablesssd --enablesssdauth --updateall" using
   # https://forge.puppetlabs.com/herculesteam/augeasproviders_pam
-  # TODO: also support debian-style /etc/pam.d layout (common-{auth,account,password})
   case $::osfamily {
     'RedHat': {
         $pam_classes = {
@@ -108,6 +107,7 @@ class epfl_sso(
                    'sss session in password-auth' => { service => 'password-auth'}
                },
         }
+        $shoot_winbind_in = {}
      }
      'Debian': {
         $pam_classes = {
@@ -125,6 +125,14 @@ class epfl_sso(
                    'sss session in common-session-noninteractive' => { service => 'common-session-noninteractive'}
                },
         }
+        $shoot_winbind_in = {
+          'no winbind in common-auth' => { service => 'common-auth' },
+          'no winbind in common-account' => { service => 'common-acount' },
+          'no winbind in common-password' => { service => 'common-password' },
+          'no winbind in common-session' => { service => 'common-session' },
+          'no winbind in common-session-noninteractive' => { service => 'common-session-noninteractive' }
+        }
+
     }
   }
   create_resources(pam, $pam_classes['auth'],
@@ -160,6 +168,13 @@ class epfl_sso(
         control   => 'optional',
         module    => 'pam_sss.so',
       })
+
+  create_resources(pam, $shoot_winbind_in,
+      {
+        ensure    => absent,
+        module    => 'pam_winbind.so',
+      })
+
 
   if ($enable_mkhomedir) {
     class { 'epfl_sso::mkhomedir': }
