@@ -111,16 +111,16 @@ class epfl_sso::krb5(
     { 
       ensure => present,
       type => 'account',
-      control => '[success=1 new_authtok_reqd=done default=ignore]',
+      control => ['success=1', 'new_authtok_reqd=done', 'default=ignore'],
       module => 'pam_krb5.so',
   })
   create_resources(pam, $pam_classes['password'],
     { 
       ensure => present,
       type => 'password',
-      control => '[success=1 new_authtok_reqd=done default=ignore]',
+      control => ['success=1', 'new_authtok_reqd=done', 'default=ignore'],
       module => 'pam_krb5.so',
-      arguments => 'use_authtok try_first_pass'
+      arguments => ['use_authtok', 'try_first_pass']
   })
   create_resources(pam, $pam_classes['session'],
     { 
