@@ -1,0 +1,82 @@
+[Logging]
+default = FILE:/var/log/krb5libs.log
+kdc = FILE:/var/log/krb5kdc.log
+admin_server = FILE:/var/log/kadmind.log
+
+[libdefaults]
+default_realm = INTRANET.EPFL.CH
+dns_lookup_realm = false
+dns_lookup_kdc = false
+ticket_lifetime = 24h
+forwardable = yes
+default_keytab_name = FILE:/etc/krb5.keytab
+
+[realms]
+INTRANET.EPFL.CH = {
+kdc = ad3.intranet.epfl.ch:88
+admin_server = ad3.intranet.epfl.ch:749
+default_domain = intranet.epfl.ch
+}
+SCX.INTRANET.EPFL.CH = {
+kdc = scxdc0.scx.intranet.epfl.ch:88
+admin_server = scxdc0.scx.intranet.epfl.ch:749
+default_domain = scx.intranet.epfl.ch
+}
+IC.INTRANET.EPFL.CH = {
+kdc = icdc1.ic.intranet.epfl.ch:88
+admin_server = icdc1.ic.intranet.epfl.ch:749
+default_domain = ic.intranet.epfl.ch
+}
+ENAC.INTRANET.EPFL.CH = {
+kdc = enacdc3.enac.intranet.epfl.ch:88
+admin_server = enacdc3.enac.intranet.epfl.ch:749
+default_domain = enac.intranet.epfl.ch
+}
+SB.INTRANET.EPFL.CH = {
+kdc = sbdc1.sb.intranet.epfl.ch:88
+admin_server = sbdc1.sb.intranet.epfl.ch:749
+default_domain = sb.intranet.epfl.ch
+}
+STI.INTRANET.EPFL.CH = {
+kdc = stisrv3.sti.intranet.epfl.ch:88
+admin_server = stisrv3.sti.intranet.epfl.ch:749
+default_domain = sti.intranet.epfl.ch
+}
+
+STUDENTS.INTRANET.EPFL.CH = {
+kdc = studentsdc1.students.intranet.epfl.ch:88
+admin_server = studentsdc1.students.intranet.epfl.ch:749
+default_domain = students.intranet.epfl.ch
+}
+SV.INTRANET.EPFL.CH = {
+kdc = svsrv5.sv.intranet.epfl.ch:88
+admin_server = svsrv5.sv.intranet.epfl.ch:749
+default_domain = sv.intranet.epfl.ch
+}
+
+[domain_realm]
+.intranet.epfl.ch = INTRANET.EPFL.CH
+intranet.epfl.ch = INTRANET.EPFL.CH
+.scx.intranet.epfl.ch = SCX.INTRANET.EPFL.CH
+scx.intranet.epfl.ch = SCX.INTRANET.EPFL.CH
+.ic.intranet.epfl.ch = IC.INTRANET.EPFL.CH
+ic.intranet.epfl.ch = IC.INTRANET.EPFL.CH
+.enac.intranet.epfl.ch = ENAC.INTRANET.EPFL.CH
+enac.intranet.epfl.ch = ENAC.INTRANET.EPFL.CH
+.sb.intranet.epfl.ch = SB.INTRANET.EPFL.CH
+sb.intranet.epfl.ch = SB.INTRANET.EPFL.CH
+.sti.intranet.epfl.ch = STI.INTRANET.EPFL.CH
+sti.intranet.epfl.ch = STI.INTRANET.EPFL.CH
+.students.intranet.epfl.ch = STUDENTS.INTRANET.EPFL.CH
+students.intranet.epfl.ch = STUDENTS.INTRANET.EPFL.CH
+.sv.intranet.epfl.ch = SV.INTRANET.EPFL.CH
+sv.intranet.epfl.ch = SV.INTRANET.EPFL.CH
+[appdefaults]
+pam = {
+debug = true
+ticket_lifetime = 36000
+renew_lifetime = 36000
+forwardable = true
+krb4_convert = false
+}
+
