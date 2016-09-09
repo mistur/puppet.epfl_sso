@@ -1,7 +1,7 @@
 # coding: utf-8
 # Class: epfl_sso::krb5
 #
-# Integrate the computer into Kerberos
+# Integrate this computer into Kerberos
 #
 # This class is the translation in Puppet of
 # https://fuhm.net/linux-and-active-directory/
@@ -59,4 +59,74 @@ class epfl_sso::krb5(
     unless => "msktutil -c --server ${ad_server} -b '${ou_path}' --no-reverse-lookups",
     require => [Package[$packages], File["/etc/krb5.conf"]]
   }
+
+  case $::osfamily {
+    'RedHat': {
+        $pam_classes = {
+               'auth' =>  {
+                   'krb5 auth in system-auth' => { service => 'system-auth'},
+                   'krb5 auth in password-auth' => { service => 'password-auth'}
+               },
+               'account' =>  {
+                   'krb5 account in system-auth' => { service => 'system-auth'},
+                   'krb5 account in password-auth' => { service => 'password-auth'}
+               },
+               'password' =>  {
+                   'krb5 password in system-auth' => { service => 'system-auth'},
+                   'krb5 password in password-auth' => { service => 'password-auth'}
+               },
+               'session' =>  {
+                   'krb5 session in system-auth' => { service => 'system-auth'},
+                   'krb5 session in password-auth' => { service => 'password-auth'}
+               },
+        }
+     }
+     'Debian': {
+        $pam_classes = {
+               'auth' =>  {
+                   'krb5 auth in common-auth' => { service => 'common-auth'},
+               },
+               'account' =>  {
+                   'krb5 account in common-account' => { service => 'common-account'}
+               },
+               'password' =>  {
+                   'krb5 password in common-password' => { service => 'common-password'}
+               },
+               'session' =>  {
+                   'krb5 session in common-session' => { service => 'common-session'},
+                   'krb5 session in common-session-noninteractive' => { service => 'common-session-noninteractive'}
+               },
+        }
+    }
+  }
+  create_resources(pam, $pam_classes['auth'],
+    { 
+      ensure => present,
+      type => 'auth',
+      control   => 'sufficient',
+      module => 'pam_krb5.so',
+      arguments => 'try_first_pass'
+    })
+  create_resources(pam, $pam_classes['account'],
+    { 
+      ensure => present,
+      type => 'account',
+      control => '[success=1 new_authtok_reqd=done default=ignore]',
+      module => 'pam_krb5.so',
+  })
+  create_resources(pam, $pam_classes['password'],
+    { 
+      ensure => present,
+      type => 'password',
+      control => '[success=1 new_authtok_reqd=done default=ignore]',
+      module => 'pam_krb5.so',
+      arguments => 'use_authtok try_first_pass'
+  })
+  create_resources(pam, $pam_classes['session'],
+    { 
+      ensure => present,
+      type => 'session',
+      control => 'optional',
+      module => 'pam_krb5.so',
+  })
 }
