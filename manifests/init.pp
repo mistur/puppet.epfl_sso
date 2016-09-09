@@ -58,6 +58,9 @@ class epfl_sso(
   #       https://cadiwww.epfl.ch/cgi-bin/accountprefs/
   ensure_resource('package', ['tcsh', 'zsh', 'ash', 'bsh', 'csh'])
 
+  if (! $::epfl_krb5_resolved) {
+    fail("FATAL: fact 'epfl_krb5_resolved' is not working.")
+  }
   if ($::epfl_krb5_resolved == "false") {
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
   }
@@ -126,11 +129,26 @@ class epfl_sso(
                },
         }
         $shoot_winbind_in = {
-          'no winbind in common-auth' => { service => 'common-auth' },
-          'no winbind in common-account' => { service => 'common-acount' },
-          'no winbind in common-password' => { service => 'common-password' },
-          'no winbind in common-session' => { service => 'common-session' },
-          'no winbind in common-session-noninteractive' => { service => 'common-session-noninteractive' }
+          'no winbind in common-auth' => {
+            service => 'common-auth',
+            type => 'auth',
+          },
+          'no winbind in common-account' => {
+            service => 'common-acount',
+            type => 'account',
+          },
+          'no winbind in common-password' => {
+            service => 'common-password',
+            type => 'password',
+          },
+          'no winbind in common-session' => {
+            service => 'common-session',
+            type => 'session',
+          },
+          'no winbind in common-session-noninteractive' => {
+            service => 'common-session-noninteractive',
+            type => 'session',
+          }
         }
 
     }
@@ -174,7 +192,6 @@ class epfl_sso(
         ensure    => absent,
         module    => 'pam_winbind.so',
       })
-
 
   if ($enable_mkhomedir) {
     class { 'epfl_sso::mkhomedir': }
