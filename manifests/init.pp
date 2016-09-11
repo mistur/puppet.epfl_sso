@@ -157,7 +157,7 @@ class epfl_sso(
       {
         ensure    => present,
         type      => 'auth',
-        control   => 'sufficient',
+        control   => '[success=ok default=ignore]',
         module    => 'pam_sss.so',
         arguments => 'use_first_pass',
         position  => 'before *[type="auth" and module="pam_deny.so"]',
@@ -174,7 +174,7 @@ class epfl_sso(
       {
         ensure    => present,
         type      => 'password',
-        control   => 'sufficient',
+        control   => '[success=ok new_authtok_reqd=done default=ignore]',
         module    => 'pam_sss.so',
         arguments => 'use_authtok',
         position  => 'before *[type="password" and module="pam_deny.so"]',
