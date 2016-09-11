@@ -3,7 +3,7 @@
 #
 # Integrate this computer into Kerberos
 #
-# This class is the translation in Puppet of
+# This class is the translation into Puppet of
 # https://fuhm.net/linux-and-active-directory/
 #
 # Unlike Windows, this approach does *not* preclude cloning - A number
@@ -13,31 +13,38 @@
 #
 # === Parameters:
 #
-# $initialize::  True iff we want to create credentials (as opposed to
-#            renewing them). AS FOR NOW THIS IS THE ONLY SUPPORTED
-#            MODE OF OPERATION. Requires running "kinit AD123456"
-#            first (replace 123456 with your SCIPER)
+# $join_domain:: An OU path relative to the Active Directory root, e.g.
+#                "OU=STI" for a physical machine, or
+#                "OU=STI,OU=StudentVDI,OU=VDI,OU=DIT-Services Communs"
+#                for a student VM.
+#                Undefined if we do not care about creating / maintaining
+#                an object in AD. Joining the domain the first time
+#                requires credentials with write access to Active Directory,
+#                which can be obtained by running e.g. "kinit AD243371"
+#                (for a physical machine) or "kinit itvdi-ad-sti" (for a
+#                student VM) as the same user (typically root) as Puppet
+#                is subsequently run as.
 #
-# $ad_server::
-#
-# $ou_path::
+# $ad_server::   The Active Directory server to use
 #
 # === Actions:
 #
-# * Create Active Directory-compatible entries in /etc/krb5.keytab
-#   (updating them is not supported yet)
+# * Create EPFL-compatible /etc/krb5.conf
 #
+# * Deploy pam_krb5.so in an "opportunistic" configuration: grab a TGT if we can,
+#   but fail gracefully otherwise
+#
+# * Optionally (depending on $join_domain), create or update Active
+#   Directory-compatible credentials in /etc/krb5.keytab . Note that cloning
+#   virtual machines that are registered in the domain suffers from the same
+#   kind of issues as on the Windows platform; as each VM instance will try
+#   to update the Kerberos password for the AD entry, they will quickly diverge
+#   since only one of them will succeed to do so.
+
 class epfl_sso::krb5(
-  $initialize = false,
   $ad_server = "ad3.intranet.epfl.ch",
-  $ou_path = "O=STI"
+  $join_domain = undef
 ) {
-  if (! $::epfl_krb5_resolved) {
-    fail("Cannot resolve KRB5 server; DNS resolv.conf configuration is probably wrong.")
-  }
-  if (! $initialize) {
-    fail("Kerberos credential refresh is not supported yet.")
-  }
   if (! $::epfl_krb5_resolved) {
     fail("FATAL: fact 'epfl_krb5_resolved' is not working.")
   }
@@ -49,15 +56,17 @@ class epfl_sso::krb5(
   $packages = [ "krb5-user", "libpam-krb5", "msktutil" ]
   ensure_packages($packages)
 
-  file { "/etc/krb5.conf":
-    content => template("epfl_sso/krb5.conf.erb")
+  if ($join_domain) {
+    exec { "Join Active Directory domain":
+      path => $::path,
+      command => "/bin/echo 'mksutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-sti\"> first'; false",
+      unless => "msktutil -c --server ${ad_server} -b '${join_domain}' --no-reverse-lookups",
+      require => [Package[$packages], File["/etc/krb5.conf"]]
+    }
   }
 
-  exec { "Create AD-compliant /etc/krb5.keytab entries":
-    path => $::path,
-    command => "/bin/echo 'Please run kinit AD123456 first'",
-    unless => "msktutil -c --server ${ad_server} -b '${ou_path}' --no-reverse-lookups",
-    require => [Package[$packages], File["/etc/krb5.conf"]]
+  file { "/etc/krb5.conf":
+    content => template("epfl_sso/krb5.conf.erb")
   }
 
   case $::osfamily {
