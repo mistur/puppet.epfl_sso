@@ -20,6 +20,8 @@ class epfl_sso(
   $enable_mkhomedir = true,
   $needs_nscd = $::epfl_sso::params::needs_nscd
 ) inherits epfl_sso::params {
+  ensure_resource('class', 'quirks')
+
   if ( (versioncmp($::puppetversion, '3') < 0) or
        (versioncmp($::puppetversion, '4') > 0) ) {
     fail("Need version 3.x of Puppet.")
