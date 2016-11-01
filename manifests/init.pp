@@ -155,10 +155,10 @@ class epfl_sso(
 
     }
   }
-  # Some versions of Ubuntu use a pam_deny as a qu
+  # Some versions of Ubuntu use pam_deny as a catch-all blocker, and
+  # successful authentication operations need to jump over it:
   $success_action = $::uses_pam_deny ? {
-    true => "1",
-    "true" => "1",
+    "true" => "1",  # There is no such thing as a Boolean fact
     default => "ok"
   }
   create_resources(pam, $pam_classes['auth'],
