@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# Mount the user's personal CIFS directory from EPFL's NAS3.
+#
+# This script relies gvfs-fuse and thus doesn't require root.
+
+set -e -x
+
+last_digit_of_uid=$(id -u |perl -ne 'm/(.)$/ && print qq($1\n)')
+
+gvfs-mount smb://$(whoami)@files${last_digit_of_uid}.intranet.epfl.ch/data/$(whoami) < /dev/null
+ln -sf /run/user/$(id -u)/gvfs/*/$(whoami) "$1"
+
