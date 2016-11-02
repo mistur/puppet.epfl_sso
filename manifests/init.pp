@@ -155,11 +155,17 @@ class epfl_sso(
 
     }
   }
+  # Some versions of Ubuntu use pam_deny as a catch-all blocker, and
+  # successful authentication operations need to jump over it:
+  $success_action = $::uses_pam_deny ? {
+    "true" => "1",  # There is no such thing as a Boolean fact
+    default => "ok"
+  }
   create_resources(pam, $pam_classes['auth'],
       {
         ensure    => present,
         type      => 'auth',
-        control   => '[success=ok default=ignore]',
+        control   => "[success=${success_action} default=ignore]",
         module    => 'pam_sss.so',
         arguments => 'use_first_pass',
         position  => 'before *[type="auth" and module="pam_deny.so"]',
@@ -168,7 +174,7 @@ class epfl_sso(
       {
         ensure    => present,
         type      => 'account',
-        control   => '[default=bad success=ok user_unknown=ignore]',
+        control   => "[default=bad success=${success_action} user_unknown=ignore]",
         module    => 'pam_sss.so',
         position  => 'before *[type="account" and module="pam_permit.so"]',
       })
@@ -176,7 +182,7 @@ class epfl_sso(
       {
         ensure    => present,
         type      => 'password',
-        control   => '[success=ok new_authtok_reqd=done default=ignore]',
+        control   => "[success=${success_action} new_authtok_reqd=done default=ignore]",
         module    => 'pam_sss.so',
         arguments => 'use_authtok',
         position  => 'before *[type="password" and module="pam_deny.so"]',

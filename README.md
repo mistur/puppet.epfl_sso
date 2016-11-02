@@ -7,10 +7,11 @@ UNIX single sign-on using EPFL's LDAP and Kerberos servers
 
 ```
 puppet module install epflsti-epfl_sso
+puppet apply -e "class { "quirks":}  class { 'quirks::pluginsync': }"   # Repeat if prompted to
 puppet apply -e 'class { "epfl_sso":  allowed_users_and_groups => "user1 user2 (group1) (group2)" }'
 ```
 
 And if you would like Kerberos with that?
 ```
-puppet apply -e 'class { "epfl_sso::krb5":  initialize => true }'
+puppet apply -e 'class { "epfl_sso::krb5":  join_domain => "OU=STI" }'
 ```
