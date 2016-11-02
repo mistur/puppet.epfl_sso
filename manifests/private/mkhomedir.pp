@@ -1,7 +1,7 @@
-# Class: epfl_sso::mkhomedir
+# Class: epfl_sso::private::mkhomedir
 #
 # Automatically create home directories upon login of a new user
-class epfl_sso::mkhomedir() {
+class epfl_sso::private::mkhomedir() {
   case $::osfamily {
     'RedHat': {
       if $lsbdistid == 'RedHat' {

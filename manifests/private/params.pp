@@ -1,4 +1,4 @@
-class epfl_sso::params {
+class epfl_sso::private::params {
   case "${::operatingsystem} ${::operatingsystemmajrelease}" {
          'Ubuntu 12.04': {
            $sssd_packages = ['sssd']

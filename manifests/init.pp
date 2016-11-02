@@ -18,8 +18,8 @@ class epfl_sso(
   $allowed_users_and_groups = undef,
   $manage_nsswitch_netgroup = true,
   $enable_mkhomedir = true,
-  $needs_nscd = $::epfl_sso::params::needs_nscd
-) inherits epfl_sso::params {
+  $needs_nscd = $::epfl_sso::private::params::needs_nscd
+) inherits epfl_sso::private::params {
   ensure_resource('class', 'quirks')
 
   if ( (versioncmp($::puppetversion, '3') < 0) or
@@ -30,7 +30,7 @@ class epfl_sso(
   validate_string($allowed_users_and_groups)
   validate_bool($manage_nsswitch_netgroup)
 
-  package { $epfl_sso::params::sssd_packages :
+  package { $epfl_sso::private::params::sssd_packages :
     ensure => present
   } ->
   file { '/etc/sssd/sssd.conf' :
@@ -68,7 +68,7 @@ class epfl_sso(
   }
 
   if ($allowed_users_and_groups != undef) {
-    class { 'epfl_sso::access':
+    class { 'epfl_sso::private::access':
       allowed_users_and_groups => $allowed_users_and_groups
     }
   }
@@ -196,6 +196,6 @@ class epfl_sso(
       })
 
   if ($enable_mkhomedir) {
-    class { 'epfl_sso::mkhomedir': }
+    class { 'epfl_sso::private::mkhomedir': }
   }
 }
