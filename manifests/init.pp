@@ -209,7 +209,6 @@ class epfl_sso(
   #
   case $::osfamily {
     'Debian': {
-      notify {"is light dm the defaut greeter = $::is_lightdm_active":}
       if ($::operatingsystemrelease in ['15.04', '15.10', '16.04', '16.10'] and $::operatingsystem == 'Ubuntu') {
         if ($::is_lightdm_active) {
           file { "/etc/lightdm/lightdm.conf.d" :
@@ -224,7 +223,7 @@ class epfl_sso(
 greeter-show-manual-login=true
 ")
           }~>service { "lightdm" :
-            ensure => running # Restart lightdm if the 50-show-manueal-login.conf file changes
+            ensure => running # Restart lightdm if the 50-show-manual-login.conf file changes
           }
         } else {
           notify {"LightDM is not the default display manager, nothing changed.":}
