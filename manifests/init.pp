@@ -204,4 +204,34 @@ class epfl_sso(
   if ($enable_mkhomedir) {
     class { 'epfl_sso::private::mkhomedir': }
   }
+  #
+  # Show manual login in latest ubuntu in case where the display manager is lightDM
+  #
+  case $::osfamily {
+    'Debian': {
+      notify {"is light dm the defaut greeter = $::is_lightdm_active":}
+      if ($::operatingsystemrelease in ['15.04', '15.10', '16.04', '16.10'] and $::operatingsystem == 'Ubuntu') {
+        if ($::is_lightdm_active) {
+          file { "/etc/lightdm/lightdm.conf.d" :
+            ensure => directory
+          }
+          file { "/etc/lightdm/lightdm.conf.d/50-show-manual-login.conf" :
+            content => inline_template("#
+# Managed by Puppet, DO NOT EDIT
+# /etc/puppet/modules/epfl_sso/manifests/init.pp
+#
+[Seat:*]
+greeter-show-manual-login=true
+")
+          }~>service { "lightdm" :
+            ensure => running # Restart lightdm if the 50-show-manueal-login.conf file changes
+          }
+        } else {
+          notify {"LightDM is not the default display manager, nothing changed.":}
+        }
+      } else {
+        notify {"Enabling the manual greeter on version $::operatingsystemrelease of Ubuntu is not supported. Please check https://github.com/epfl-sti/puppet.epfl_sso":}
+      }
+    }
+  }
 }
