@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Check if LightDM is the default DM 
+if grep -q lightdm /etc/X11/default-display-manager; then
+  echo "is_lightdm_active=true"
+else
+  echo "is_lightdm_active=false"
+fi
