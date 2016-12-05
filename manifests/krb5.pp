@@ -45,16 +45,21 @@ class epfl_sso::krb5(
   $ad_server = "ad3.intranet.epfl.ch",
   $join_domain = undef
 ) {
-  if (! $::epfl_krb5_resolved) {
-    fail("FATAL: fact 'epfl_krb5_resolved' is not working.")
-  }
   if ($::epfl_krb5_resolved == "false") {
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
   }
 
   # TODO: this is Debian-ish only
-  $packages = [ "krb5-user", "libpam-krb5", "msktutil" ]
+  $packages = [ "krb5-user", "libpam-krb5", "msktutil", "dnsutils" ]
   ensure_packages($packages)
+
+  if (! $::epfl_krb5_resolved) {
+    Package["dnsutils"] ~>
+    exec { "echo 'dig was installed - Please run Puppet again'; exit 2":
+      path => $::path,
+      refreshonly => true
+    }
+  }
 
   if ($join_domain) {
     exec { "Join Active Directory domain":
