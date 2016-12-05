@@ -60,13 +60,6 @@ class epfl_sso(
   #       https://cadiwww.epfl.ch/cgi-bin/accountprefs/
   ensure_resource('package', ['tcsh', 'zsh', 'ash', 'bsh', 'csh'])
 
-  if (! $::epfl_krb5_resolved) {
-    fail("FATAL: fact 'epfl_krb5_resolved' is not working.")
-  }
-  if ($::epfl_krb5_resolved == "false") {
-    fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
-  }
-
   if ($allowed_users_and_groups != undef) {
     class { 'epfl_sso::private::access':
       allowed_users_and_groups => $allowed_users_and_groups
