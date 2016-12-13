@@ -203,7 +203,7 @@ class epfl_sso(
   case $::osfamily {
     'Debian': {
       if ($::operatingsystemrelease in ['15.04', '15.10', '16.04', '16.10'] and $::operatingsystem == 'Ubuntu') {
-        if ($::is_lightdm_active) {
+        if (str2bool($::is_lightdm_active)) {
           file { "/etc/lightdm/lightdm.conf.d" :
             ensure => directory
           }
