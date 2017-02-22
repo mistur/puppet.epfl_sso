@@ -58,7 +58,35 @@ class epfl_sso(
   # figuring it all out from the logs is quite a challenge.
   # Note: EPFL's default shell can be changed here:
   #       https://cadiwww.epfl.ch/cgi-bin/accountprefs/
-  ensure_resource('package', ['tcsh', 'zsh', 'ash', 'bsh', 'csh'])
+  # As of Feb, 2017 the options are
+  # 
+  # /bin/sh
+  # /bin/bash
+  # /bin/tcsh
+  # /bin/zsh
+  # /bin/csh
+  # /bin/bash2
+  # /bin/ash
+  # /bin/bsh
+  # /sbin/nologin                
+
+  # This seems to be the lowest common denominator across distributions:
+  ensure_resource('package', ['tcsh', 'zsh', 'bsh'])
+  case $::osfamily {
+    "Debian": {
+      ensure_resource('package', ['ash', 'csh'])  # In addition to above
+    }
+    "RedHat": {
+      package { "ash":
+        provider => "rpm",
+        source => "http://ftp.uni-erlangen.de/mirrors/opensuse/distribution/11.4/repo/oss/suse/x86_64/ash-1.6.1-146.2.x86_64.rpm"
+      }
+      file { "/bin/csh":
+        ensure => "link",
+        target => "tcsh"
+      }
+    }
+  }
 
   if ($allowed_users_and_groups != undef) {
     class { 'epfl_sso::private::access':
