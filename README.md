@@ -15,3 +15,8 @@ And if you would like Kerberos with that?
 ```
 puppet apply -e 'class { "epfl_sso::krb5":  join_domain => "OU=IEL-GE-Servers,OU=IEL-GE,OU=IEL,OU=STI" }'
 ```
+
+Turn on inbound ssh access using Kerberos credentials:
+```
+puppet apply -e 'class { "epfl_sso::krb5::ssh": }'
+```
