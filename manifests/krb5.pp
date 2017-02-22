@@ -13,17 +13,18 @@
 #
 # === Parameters:
 #
-# $join_domain:: An OU path relative to the Active Directory root, e.g.
-#                "OU=STI" for a physical machine, or
+# $join_domain:: An OU path relative to the Active Directory root,
+#                e.g. "OU=IEL-GE-Servers,OU=IEL-GE,OU=IEL,OU=STI" for
+#                a physical machine, or
 #                "OU=STI,OU=StudentVDI,OU=VDI,OU=DIT-Services Communs"
-#                for a student VM.
-#                Undefined if we do not care about creating / maintaining
-#                an object in AD. Joining the domain the first time
-#                requires credentials with write access to Active Directory,
-#                which can be obtained by running e.g. "kinit AD243371"
-#                (for a physical machine) or "kinit itvdi-ad-sti" (for a
-#                student VM) as the same user (typically root) as Puppet
-#                is subsequently run as.
+#                for a student VM. Undefined if we do not care about
+#                creating / maintaining an object in AD. Joining the
+#                domain the first time requires credentials with write
+#                access to Active Directory, which can be obtained by
+#                running e.g. "kinit AD243371" (for a physical
+#                machine) or "kinit itvdi-ad-sti" (for a student VM)
+#                as the same user (typically root) as Puppet is
+#                subsequently run as.
 #
 # $ad_server::   The Active Directory server to use
 #

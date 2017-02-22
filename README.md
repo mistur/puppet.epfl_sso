@@ -13,5 +13,5 @@ puppet apply -e 'class { "epfl_sso":  allowed_users_and_groups => "user1 user2 (
 
 And if you would like Kerberos with that?
 ```
-puppet apply -e 'class { "epfl_sso::krb5":  join_domain => "OU=STI" }'
+puppet apply -e 'class { "epfl_sso::krb5":  join_domain => "OU=IEL-GE-Servers,OU=IEL-GE,OU=IEL,OU=STI" }'
 ```
