@@ -28,6 +28,10 @@
 #
 # $ad_server::   The Active Directory server to use
 #
+# $pam_success_actions::       What to use as the [success= ] stanza, keyed
+#                              by PAM stage ("auth", "account", "session" or
+#                              "password")
+#
 # === Actions:
 #
 # * Create EPFL-compatible /etc/krb5.conf
@@ -44,8 +48,9 @@
 
 class epfl_sso::krb5(
   $ad_server = "ad3.intranet.epfl.ch",
-  $join_domain = undef
-) {
+  $join_domain = undef,
+  $pam_success_actions = $::epfl_sso::private::params::pam_success_actions
+) inherits epfl_sso::private::params {
   if ($::epfl_krb5_resolved == "false") {
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
   }
@@ -131,7 +136,7 @@ class epfl_sso::krb5(
     { 
       ensure => present,
       type => 'auth',
-      control => '[success=ok default=ignore]',
+      control => "[success=${pam_success_actions[auth]} default=ignore]",
       module => 'pam_krb5.so',
       arguments => 'try_first_pass'
     })
@@ -139,7 +144,7 @@ class epfl_sso::krb5(
     { 
       ensure => present,
       type => 'account',
-      control => '[success=ok default=ignore]',
+      control => "[success=${pam_success_actions[account]} default=ignore]",
       module => 'pam_krb5.so',
   })
   # No changing password over Kerberos – Use sss.

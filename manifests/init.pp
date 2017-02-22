@@ -14,11 +14,16 @@
 #                              directories upon first login
 # $needs_nscd::                Whether to install nscd to serve as a second
 #                              layer of cache (for old distros with slow sssd)
+# $pam_success_actions::       What to use as the [success= ] stanza, keyed
+#                              by PAM stage ("auth", "account", "session" or
+#                              "password")
+
 class epfl_sso(
   $allowed_users_and_groups = undef,
   $manage_nsswitch_netgroup = true,
   $enable_mkhomedir = true,
-  $needs_nscd = $::epfl_sso::private::params::needs_nscd
+  $needs_nscd = $::epfl_sso::private::params::needs_nscd,
+  $pam_success_actions = $::epfl_sso::private::params::pam_success_actions
 ) inherits epfl_sso::private::params {
   ensure_resource('class', 'quirks')
 
@@ -176,17 +181,11 @@ class epfl_sso(
 
     }
   }
-  # Some versions of Ubuntu use pam_deny as a catch-all blocker, and
-  # successful authentication operations need to jump over it:
-  $success_action = $::uses_pam_deny ? {
-    "true" => "1",  # There is no such thing as a Boolean fact
-    default => "ok"
-  }
   create_resources(pam, $pam_classes['auth'],
       {
         ensure    => present,
         type      => 'auth',
-        control   => "[success=${success_action} default=ignore]",
+        control   => "[success=${pam_success_actions[auth]} default=ignore]",
         module    => 'pam_sss.so',
         arguments => 'use_first_pass',
         position  => 'before *[type="auth" and module="pam_deny.so"]',
@@ -195,7 +194,7 @@ class epfl_sso(
       {
         ensure    => present,
         type      => 'account',
-        control   => "[default=bad success=${success_action} user_unknown=ignore]",
+        control   => "[default=bad success=${pam_success_actions[account]} user_unknown=ignore]",
         module    => 'pam_sss.so',
         position  => 'before *[type="account" and module="pam_permit.so"]',
       })
@@ -203,7 +202,7 @@ class epfl_sso(
       {
         ensure    => present,
         type      => 'password',
-        control   => "[success=${success_action} new_authtok_reqd=done default=ignore]",
+        control   => "[success=${pam_success_actions[password]} new_authtok_reqd=done default=ignore]",
         module    => 'pam_sss.so',
         arguments => 'use_authtok',
         position  => 'before *[type="password" and module="pam_deny.so"]',
