@@ -71,10 +71,10 @@ class epfl_sso(
   # /sbin/nologin                
 
   # This seems to be the lowest common denominator across distributions:
-  ensure_resource('package', ['tcsh', 'zsh', 'bsh'])
+  ensure_packages(['tcsh', 'zsh', 'bsh'])
   case $::osfamily {
     "Debian": {
-      ensure_resource('package', ['ash', 'csh'])  # In addition to above
+      ensure_packages(['ash', 'csh'])  # In addition to above
     }
     "RedHat": {
       package { "ash":
