@@ -79,7 +79,7 @@ class epfl_sso::krb5(
     exec { "Join Active Directory domain":
       path => $::path,
       command => "/bin/echo 'mkstutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-sti\"> first'; false",
-      unless => "msktutil -c --server ${ad_server} -b '${join_domain}' --no-reverse-lookups --computer-name ${::hostname}",
+      unless => "msktutil -c --server ${ad_server} -b '${join_domain}' --no-reverse-lookups --enctypes 24 --computer-name ${::hostname}",
       require => [Package[$_all_packages], File["/etc/krb5.conf"]]
     }
   }
