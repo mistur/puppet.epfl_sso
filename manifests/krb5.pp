@@ -49,12 +49,25 @@ class epfl_sso::krb5(
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
   }
 
-  # TODO: this is Debian-ish only
-  $packages = [ "krb5-user", "libpam-krb5", "msktutil", "dnsutils" ]
-  ensure_packages($packages)
+  case $::osfamily {
+    "Debian": {
+      $_package_of_dig = "dnsutils"
+      $_other_packages_to_install = [ "krb5-user", "libpam-krb5", "msktutil" ] 
+    }
+    "RedHat": {
+      $_package_of_dig = "bind-utils"
+      # https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Managing_Smart_Cards/installing-kerberos.html
+      $_other_packages_to_install = [ "krb5-workstation", "krb5-libs", "pam_krb5", "msktutil" ]
+    }
+    default: {
+      fail("Not sure how to install Kerberos dependencies on ${::osfamily}-family Linux")
+    }
+  }
 
+  $_all_packages = union([$_package_of_dig], $_other_packages_to_install)
+  ensure_packages([$_all_packages])
   if (! $::epfl_krb5_resolved) {
-    Package["dnsutils"] ~>
+    Package[$_package_of_dig] ~>
     exec { "echo 'dig was installed - Please run Puppet again'; exit 2":
       path => $::path,
       refreshonly => true
@@ -66,7 +79,7 @@ class epfl_sso::krb5(
       path => $::path,
       command => "/bin/echo 'mkstutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-sti\"> first'; false",
       unless => "msktutil -c --server ${ad_server} -b '${join_domain}' --no-reverse-lookups --computer-name ${::hostname}",
-      require => [Package[$packages], File["/etc/krb5.conf"]]
+      require => [Package[$_all_packages], File["/etc/krb5.conf"]]
     }
   }
 
