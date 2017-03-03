@@ -1,4 +1,6 @@
 class epfl_sso::private::params {
+  $krb5_domain = "INTRANET.EPFL.CH"
+
   case "${::operatingsystem} ${::operatingsystemmajrelease}" {
          'Ubuntu 12.04': {
            $sssd_packages = ['sssd']
