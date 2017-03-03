@@ -20,3 +20,8 @@ Turn on inbound ssh access using Kerberos credentials:
 ```
 puppet apply -e 'class { "epfl_sso::krb5::ssh": }'
 ```
+
+Turn on Kerberized NFSv4 client support:
+```
+puppet apply -e 'class { "epfl_sso::nfs": }'
+```
