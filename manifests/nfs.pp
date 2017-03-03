@@ -33,15 +33,15 @@ class epfl_sso::nfs(
 
   if ($::operatingsystem == "Ubuntu" and
       $::operatingsystemrelease >= "16.04") {
-    file_line { "NEED_GSSD in /etc/default/nfs":
-      path => "/etc/default/nfs",
+    file_line { "NEED_GSSD in /etc/default/nfs-common":
+      path => "/etc/default/nfs-common",
       ensure => present,
       line => $client_ensure ? {
         "present" => "NEED_GSSD=yes",
         default   => "NEED_GSSD="
       },
       match => "^NEED_GSSD"
-    } ~> exec { "systemctl restart nfs-config.service:":
+    } ~> exec { "systemctl daemon-reload; systemctl restart nfs-config.service":
       path => $::path,
       refreshonly => true
     } -> Anchor["epfl_sso::nfs::rpc_gssd_configured"]
