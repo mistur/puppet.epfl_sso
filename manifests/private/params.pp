@@ -16,9 +16,9 @@ class epfl_sso::private::params {
   # the control flow before it reaches there:
   $_pam_success_actions_with_pam_deny = {
       auth => "done",
-      password => "done",
-      # For account and session, there is no evidence at this time of
-      # pam_deny being used in the wild
+      password => "ok",
+      # For account and session, we actively make sense that pam_deny.so
+      # is not in use (see below).
       account => "ok",
       session => "ok"
   }
@@ -32,4 +32,16 @@ class epfl_sso::private::params {
     "true" => $_pam_success_actions_with_pam_deny,
     default => $_pam_success_actions_without_pam_deny
   }
+
+  define pam_deny_makes_no_sense_in() {
+    pam { "pam_deny makes no sense in ${title}":
+      ensure  => absent,
+      service => $title,
+      module  => 'pam_deny.so',
+    }
+  }
+
+  # Unfortunately this seems to have no effect on Xenial :(
+  pam_deny_makes_no_sense_in { ["common-account",
+                                "common-session"]: }
 }

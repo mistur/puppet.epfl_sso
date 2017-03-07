@@ -132,13 +132,25 @@ class epfl_sso::krb5(
         }
     }
   }
+
+  case $::uses_pam_deny {
+    "true": {
+      $_before_pam_deny = "before module pam_deny.so"
+    }
+    default: {
+      $_before_pam_deny = undef
+    }
+  }
+
+
   create_resources(pam, $pam_classes['auth'],
     { 
       ensure => present,
       type => 'auth',
       control => "[success=${pam_success_actions[auth]} default=ignore]",
       module => 'pam_krb5.so',
-      arguments => 'try_first_pass'
+      arguments => 'try_first_pass',
+      position => $_before_pam_deny
     })
   create_resources(pam, $pam_classes['account'],
     { 
@@ -146,6 +158,7 @@ class epfl_sso::krb5(
       type => 'account',
       control => "[success=${pam_success_actions[account]} default=ignore]",
       module => 'pam_krb5.so',
+      position => $_before_pam_deny
   })
   # No changing password over Kerberos – Use sss.
   create_resources(pam, $pam_classes['session'],
@@ -154,5 +167,6 @@ class epfl_sso::krb5(
       type => 'session',
       control => 'optional',
       module => 'pam_krb5.so',
+      position => $_before_pam_deny
   })
 }
