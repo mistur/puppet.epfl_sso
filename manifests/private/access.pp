@@ -15,17 +15,36 @@ class epfl_sso::private::access(
     group   => root,
     mode    => '0644'
   }
-  # TODO: also support debian-style /etc/pam.d layout (common-{auth,account,password})
-  create_resources(pam,
-  {
-    'pam_access in system-auth' => { service => 'system-auth'},
-    'pam_access in password-auth' => { service => 'password-auth'}
-  },
-  {
-    ensure    => present,
-    type      => 'account',
-    control   => 'requisite',
-    module    => 'pam_access.so',
-    position  => 'before *[type="account" and module="pam_unix.so"]',
-  })
+  case $::osfamily {
+    "Debian": {
+      create_resources(pam,
+      {
+        'pam_access in common-account' => { service => 'common-account'},
+      },
+      {
+        ensure    => present,
+        type      => 'account',
+        control   => 'requisite',
+        module    => 'pam_access.so',
+        position  => 'before *[type="account" and module="pam_unix.so"]',
+        })
+    }
+    "RedHat": {
+      create_resources(pam,
+      {
+        'pam_access in system-auth' => { service => 'system-auth'},
+        'pam_access in password-auth' => { service => 'password-auth'}
+      },
+      {
+        ensure    => present,
+        type      => 'account',
+        control   => 'requisite',
+        module    => 'pam_access.so',
+        position  => 'before *[type="account" and module="pam_unix.so"]',
+        })
+    }
+    default: {
+      fail("Not too sure how to set up pam on ${::osfamily}-like operating systems")
+    }
+  }
 }
