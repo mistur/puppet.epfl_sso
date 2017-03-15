@@ -28,12 +28,12 @@ class epfl_sso(
   ensure_resource('class', 'quirks')
 
   if ( (versioncmp($::puppetversion, '3') < 0) or
-       (versioncmp($::puppetversion, '4') > 0) ) {
-    fail("Need version 3.x of Puppet.")
+       (versioncmp($::puppetversion, '5') > 0) ) {
+    fail("Need version 3.x or 4.x of Puppet.")
   }
 
-  validate_string($allowed_users_and_groups)
-  validate_bool($manage_nsswitch_netgroup)
+  validate_legacy("Optional[String]", "validate_string", $allowed_users_and_groups)
+  validate_legacy("Stdlib::Compat::Bool", "validate_bool", $manage_nsswitch_netgroup)
 
   package { $epfl_sso::private::params::sssd_packages :
     ensure => present

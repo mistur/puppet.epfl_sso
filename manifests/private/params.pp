@@ -42,6 +42,6 @@ class epfl_sso::private::params {
   }
 
   # Unfortunately this seems to have no effect on Xenial :(
-  pam_deny_makes_no_sense_in { ["common-account",
-                                "common-session"]: }
+  epfl_sso::private::params::pam_deny_makes_no_sense_in { ["common-account",
+                                                           "common-session"]: }
 }
