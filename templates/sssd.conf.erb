@@ -4,11 +4,13 @@
 config_file_version = 2
 domains = intranet.epfl.ch
 services = nss, pam
-debug_level = 0
+<%= @debug ? "debug_level = 9" : "" %>
 
 [nss]
+<%= @debug ? "debug_level = 9" : "" %>
 
 [pam]
+<%= @debug ? "debug_level = 9" : "" %>
 
 [domain/intranet.epfl.ch]
 # Unless you know you need referrals, turn them off
@@ -38,3 +40,5 @@ krb5_realm = INTRANET.EPFL.CH
 
 # Probably required with sssd 1.8.x and newer
 krb5_canonicalize = false
+
+<%= @debug ? "debug_level = 9" : "" %>
