@@ -5,52 +5,25 @@ class epfl_sso::private::mkhomedir() {
   case $::osfamily {
     'RedHat': {
       if $lsbdistid == 'RedHat' {
-        package { 'oddjob-mkhomedir' :
-          ensure => present
-        }
+        $_pam_mkhomedir_package = 'oddjob-mkhomedir'
       }
     }
-
     'Debian': {
       case "${::operatingsystem} ${::operatingsystemmajrelease}" {
          'Ubuntu 16.04': {
               # http://packages.ubuntu.com/search?suite=xenial&keywords=oddjob-mkhomedir
-              package { 'oddjob-mkhomedir' :
-                ensure => present
-              }
+           $_pam_mkhomedir_package = 'oddjob-mkhomedir'
          }
          default: {
-              package { 'libpam-modules' :
-                ensure => present
-              }
+           $_pam_mkhomedir_package = 'libpam-modules'
          }
       }
     }
   }
 
-  # Mimic "authconfig --enablemkhomedir"
-  case $::osfamily {
-    'RedHat': {
-      $pam_mkhomedir_session = {
-        'mkhomedir session in system-auth' => { service => 'system-auth'},
-        'mkhomedir session in password-auth' => { service => 'password-auth'}
-      }
-      $pam_arguments = []
-    }
-    'Debian': {
-      $pam_mkhomedir_session = {
-        'mkhomedir session in common-session' => { service => 'common-session'},
-        'mkhomedir session in common-session-noninteractive' => { service => 'common-session-noninteractive'},
-      }
-      $pam_arguments = ['skel=/etc/skel/', 'umask=0022']
-    }
+  package { $_pam_mkhomedir_package :
+    ensure => present
   }
-  create_resources(pam, $pam_mkhomedir_session,
-      {
-        ensure    => present,
-        type      => 'session',
-        control   => 'required',
-        module    => "pam_mkhomedir.so",
-        arguments => $pam_arguments
-      })
+  include epfl_sso::private::pam
+  epfl_sso::private::pam::module { "mkhomedir": }
 }

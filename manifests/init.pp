@@ -50,6 +50,9 @@ class epfl_sso(
     enable => true
   }
 
+  include epfl_sso::private::pam
+  epfl_sso::private::pam::module { "sss": }
+
   if ($needs_nscd) {
     package { "nscd":
       ensure => present
@@ -116,113 +119,12 @@ class epfl_sso(
     }
   }
 
-  # Mimic "authconfig --enablesssd --enablesssdauth --updateall" using
-  # https://forge.puppetlabs.com/herculesteam/augeasproviders_pam
-  case $::osfamily {
-    'RedHat': {
-        $pam_classes = {
-               'auth' =>  {
-                   'sss auth in system-auth' => { service => 'system-auth'},
-                   'sss auth in password-auth' => { service => 'password-auth'}
-               },
-               'account' =>  {
-                   'sss account in system-auth' => { service => 'system-auth'},
-                   'sss account in password-auth' => { service => 'password-auth'}
-               },
-               'password' =>  {
-                   'sss password in system-auth' => { service => 'system-auth'},
-                   'sss password in password-auth' => { service => 'password-auth'}
-               },
-               'session' =>  {
-                   'sss session in system-auth' => { service => 'system-auth'},
-                   'sss session in password-auth' => { service => 'password-auth'}
-               },
-        }
-        $shoot_winbind_in = {}
-     }
-     'Debian': {
-        $pam_classes = {
-               'auth' =>  {
-                   'sss auth in common-auth' => { service => 'common-auth'},
-               },
-               'account' =>  {
-                   'sss account in common-account' => { service => 'common-account'}
-               },
-               'password' =>  {
-                   'sss password in common-password' => { service => 'common-password'}
-               },
-               'session' =>  {
-                   'sss session in common-session' => { service => 'common-session'},
-                   'sss session in common-session-noninteractive' => { service => 'common-session-noninteractive'}
-               },
-        }
-        $shoot_winbind_in = {
-          'no winbind in common-auth' => {
-            service => 'common-auth',
-            type => 'auth',
-          },
-          'no winbind in common-account' => {
-            service => 'common-acount',
-            type => 'account',
-          },
-          'no winbind in common-password' => {
-            service => 'common-password',
-            type => 'password',
-          },
-          'no winbind in common-session' => {
-            service => 'common-session',
-            type => 'session',
-          },
-          'no winbind in common-session-noninteractive' => {
-            service => 'common-session-noninteractive',
-            type => 'session',
-          }
-        }
-
-    }
-  }
-  create_resources(pam, $pam_classes['auth'],
-      {
-        ensure    => present,
-        type      => 'auth',
-        control   => "[success=${pam_success_actions[auth]} default=ignore]",
-        module    => 'pam_sss.so',
-        arguments => 'use_first_pass',
-        position  => 'before *[type="auth" and module="pam_deny.so"]',
-      })
-  create_resources(pam, $pam_classes['account'],
-      {
-        ensure    => present,
-        type      => 'account',
-        control   => "[default=bad success=${pam_success_actions[account]} user_unknown=ignore]",
-        module    => 'pam_sss.so',
-        position  => 'before *[type="account" and module="pam_permit.so"]',
-      })
-  create_resources(pam, $pam_classes['password'],
-      {
-        ensure    => present,
-        type      => 'password',
-        control   => "[success=${pam_success_actions[password]} new_authtok_reqd=done default=ignore]",
-        module    => 'pam_sss.so',
-        arguments => 'use_authtok',
-        position  => 'before *[type="password" and module="pam_deny.so"]',
-      })
-  create_resources(pam, $pam_classes['session'],
-      {
-        ensure    => present,
-        type      => 'session',
-        control   => 'optional',
-        module    => 'pam_sss.so',
-      })
-
-  create_resources(pam, $shoot_winbind_in,
-      {
-        ensure    => absent,
-        module    => 'pam_winbind.so',
-      })
-
   if ($enable_mkhomedir) {
     class { 'epfl_sso::private::mkhomedir': }
+  }
+
+  epfl_sso::private::pam::module { "winbind":
+    ensure => "absent"
   }
   #
   # Show manual login in latest ubuntu in case where the display manager is lightDM
