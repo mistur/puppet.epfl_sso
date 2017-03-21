@@ -20,6 +20,10 @@ class epfl_sso::private::pam {
             $_authconfig_enable_args = "--enablesssdauth"
             $_authconfig_disable_args = "--disablesssdauth"
           }
+          'krb5': {
+            $_authconfig_enable_args = "--enablekrb5"
+            $_authconfig_disable_args = "--disablekrb5"
+          }
           'mkhomedir': {
             $_authconfig_enable_args = "--enablemkhomedir"
             $_authconfig_disable_args = "--disablemkhomedir"
