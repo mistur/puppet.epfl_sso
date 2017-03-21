@@ -13,7 +13,7 @@ class epfl_sso::private::pam {
       'RedHat': {
         # authconfig is prone to wreaking havoc in a variety of
         # configuration files; make sure we apply our own overrides last
-        ensure_resources('anchor', 'epfl_sso::authconfig_has_run')
+        ensure_resource('anchor', 'epfl_sso::authconfig_has_run')
         Name_Service <| |> -> Anchor['epfl_sso::authconfig_has_run']
 
         case $title {

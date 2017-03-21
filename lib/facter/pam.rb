@@ -5,7 +5,7 @@ $logger = Logger.new(STDERR)
 def pam_file_of_distro(type)
   return case Facter.value(:osfamily)
          when 'RedHat'
-           "/etc/pam.d/system-#{type}-ac"
+           "/etc/pam.d/system-auth-ac"
          when 'Debian'
            "/etc/pam.d/common-#{type}"
          else
