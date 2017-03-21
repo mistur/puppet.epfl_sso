@@ -147,8 +147,6 @@ greeter-show-manual-login=true
           }~>service { "lightdm" :
             ensure => running # Restart lightdm if the 50-show-manual-login.conf file changes
           }
-        } else {
-          notify {"LightDM is not the default display manager, nothing changed.":}
         }
       } else {
         notify {"Enabling the manual greeter on version $::operatingsystemrelease of Ubuntu is not supported. Please check https://github.com/epfl-sti/puppet.epfl_sso":}
