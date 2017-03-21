@@ -3,12 +3,11 @@
 # Defined types for cross-distribution PAM configuration
 
 class epfl_sso::private::pam {
-  # Ensure that a module is active.
+  # Ensure that a module is present / absent using the distribution's tools
   define module(
     $ensure = "present",
     $debug = undef
   ) {
-    # Set up pam_sss using the distribution's tools
     case $::osfamily {
       'RedHat': {
         # authconfig is prone to wreaking havoc in a variety of
