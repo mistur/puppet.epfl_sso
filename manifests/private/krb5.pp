@@ -76,10 +76,11 @@ class epfl_sso::private::krb5(
   }
 
   if ($join_domain) {
-    exec { "Join Active Directory domain":
+    $_msktutil_command = inline_template('msktutil -c --server <%= @ad_server %> -b "<%= @join_domain %>" --no-reverse-lookups --enctypes 24 --computer-name <%= @hostname.upcase %>')
+    exec { "${_msktutil_command}":
       path => $::path,
       command => "/bin/echo 'mkstutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-sti\"> first'; false",
-      unless => "msktutil -c --server ${ad_server} -b '${join_domain}' --no-reverse-lookups --enctypes 24 --computer-name ${::hostname}",
+      unless => $_msktutil_command,
       require => [Package[$_all_packages], File["/etc/krb5.conf"]]
     }
   }
