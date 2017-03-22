@@ -9,7 +9,8 @@
 # $allowed_users_and_groups::  access.conf(5)-style ACL, e.g.
 #                              "user1 user2 (group1) (group2)"
 #                              Note: if you run gdm, user gdm must have access
-# $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in nsswitch.conf
+# $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in
+#                              nsswitch.conf
 # $enable_mkhomedir::          Whether to automatically create users' home
 #                              directories upon first login
 # $needs_nscd::                Whether to install nscd to serve as a second
@@ -17,7 +18,12 @@
 # $pam_success_actions::       What to use as the [success= ] stanza, keyed
 #                              by PAM stage ("auth", "account", "session" or
 #                              "password")
-
+# === Actions:
+#
+# * Install SSSD and configure it to talk to scoldap.epfl.ch for
+#   directory data (nsswitch) and to the INTRANET Active Directory domain
+#   for (Kerberos-based) authentication (PAM)
+#
 class epfl_sso(
   $allowed_users_and_groups = undef,
   $manage_nsswitch_netgroup = true,
