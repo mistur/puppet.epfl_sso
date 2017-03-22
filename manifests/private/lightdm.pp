@@ -1,7 +1,7 @@
 #
 # Show manual login in latest ubuntu in case where the display manager is lightDM
 #
-class { "epfl_sso::private::lightdm"}:
+class epfl_sso::private::lightdm {
   case $::osfamily {
     'Debian': {
       if ($::operatingsystemrelease in ['15.04', '15.10', '16.04', '16.10'] and $::operatingsystem == 'Ubuntu') {

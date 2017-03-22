@@ -4,9 +4,7 @@
 class epfl_sso::private::mkhomedir() {
   case $::osfamily {
     'RedHat': {
-      if $lsbdistid == 'RedHat' {
-        $_pam_mkhomedir_package = 'oddjob-mkhomedir'
-      }
+      $_pam_mkhomedir_package = 'oddjob-mkhomedir'
     }
     'Debian': {
       case "${::operatingsystem} ${::operatingsystemmajrelease}" {

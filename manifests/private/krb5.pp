@@ -1,7 +1,7 @@
 # coding: utf-8
-# Class: epfl_sso::krb5
+# Class: epfl_sso::private::krb5
 #
-# Integrate this computer into Kerberos
+# Integrate this computer into EPFL's Kerberos (Active Directory)
 #
 # This class is the translation into Puppet of
 # https://fuhm.net/linux-and-active-directory/
@@ -42,9 +42,9 @@
 #   to update the Kerberos password for the AD entry, they will quickly diverge
 #   since only one of them will succeed to do so.
 
-class epfl_sso::krb5(
-  $ad_server = "ad3.intranet.epfl.ch",
-  $join_domain = undef
+class epfl_sso::private::krb5(
+  $ad_server,
+  $join_domain
 ) inherits epfl_sso::private::params {
   if ($::epfl_krb5_resolved == "false") {
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")

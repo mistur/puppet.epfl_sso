@@ -38,15 +38,19 @@ class epfl_sso::private::pam {
           }
         }
 
+        $_pam_module_match = $title ? {
+          "mkhomedir" => "'pam_\\(oddjob\\)\\?_mkhomedir'",
+          default => $title
+        }
         if ($ensure == "present") {
           exec { "authconfig ${_authconfig_enable_args} --updateall":
             path => $::path,
-            unless => "grep pam_${title} /etc/pam.d/system-auth-ac"
+            unless => "grep ${_pam_module_match} /etc/pam.d/system-auth-ac"
           } -> Anchor['epfl_sso::authconfig_has_run']
         } else {
           exec { "authconfig ${_authconfig_disable_args} --updateall":
             path => $::path,
-            onlyif => "grep pam_${title} /etc/pam.d/system-auth-ac"
+            onlyif => "grep ${_pam_module_match} /etc/pam.d/system-auth-ac"
           } -> Anchor['epfl_sso::authconfig_has_run']
         }
       }

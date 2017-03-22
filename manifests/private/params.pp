@@ -1,5 +1,6 @@
 class epfl_sso::private::params {
   $krb5_domain = "INTRANET.EPFL.CH"
+  $ad_server = "ad3.intranet.epfl.ch"
 
   case "${::operatingsystem} ${::operatingsystemmajrelease}" {
          'Ubuntu 12.04': {

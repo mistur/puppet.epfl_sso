@@ -1,16 +1,21 @@
 <%= "# This file is managed with Puppet." %>
+<%-
+@auth_provider = (@auth_source == "AD") ? "krb5" : "ldap"
+
+%>
+
 
 [sssd]
 config_file_version = 2
 domains = intranet.epfl.ch
 services = nss, pam
-<%= @debug ? "debug_level = 9" : "" %>
+<%= @debug_sssd ? "debug_level = 9" : "" %>
 
 [nss]
-<%= @debug ? "debug_level = 9" : "" %>
+<%= @debug_sssd ? "debug_level = 9" : "" %>
 
 [pam]
-<%= @debug ? "debug_level = 9" : "" %>
+<%= @debug_sssd ? "debug_level = 9" : "" %>
 
 [domain/intranet.epfl.ch]
 # Unless you know you need referrals, turn them off
@@ -20,8 +25,8 @@ ldap_referrals = false
 enumerate = false
 
 id_provider = ldap
-auth_provider = krb5
-chpass_provider = krb5
+auth_provider = <%= @auth_provider %>
+chpass_provider = <%= @auth_provider %>
 access_provider = ldap
 
 ldap_uri = ldap://scoldap.epfl.ch/
@@ -41,4 +46,4 @@ krb5_realm = INTRANET.EPFL.CH
 # Probably required with sssd 1.8.x and newer
 krb5_canonicalize = false
 
-<%= @debug ? "debug_level = 9" : "" %>
+<%= @debug_sssd ? "debug_level = 9" : "" %>
