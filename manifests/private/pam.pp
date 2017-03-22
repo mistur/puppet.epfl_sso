@@ -56,15 +56,44 @@ class epfl_sso::private::pam {
       }
 
       'Debian': {
-        # Le sigh. https://bugs.launchpad.net/ubuntu/+source/pam/+bug/682662
-        # At least we have chicken, uh, Perl (since we are on Debian)
-        $_adhoc_edit_script = "/usr/local/lib/epfl_sso/debconf-adhoc-editor"
-        file { ["/usr", "/usr/local", "/usr/local/lib", "/usr/local/lib/epfl_sso"]:
-          ensure => "directory"
-        } ->
-        file { $_adhoc_edit_script:
-          mode => "0700",
-          content => inline_template('#!/usr/bin/perl -w
+        ensure_packages(['libpam-runtime'])
+
+        $_condition_has_module = "grep -q pam_${title}.so /etc/pam.d/common-auth /etc/pam.d/common-password /etc/pam.d/common-account /etc/pam.d/common-session"
+        case $ensure {
+          "present": {
+            $_what_do = "add"
+            $_unless = $_condition_has_module
+            $_onlyif = undef
+          }
+          default: {
+            $_what_do = "remove"
+            $_onlyif = $_condition_has_module
+            $_unless = undef
+          }
+        }
+
+        $_debug_env = $debug ? { undef => "", default => "DEBUG=1" }
+        $_script = $::epfl_sso::private::pam::_adhoc_edit_script_for_debian
+        exec { "Run pam-auth-update to ${what_do} ${title}":
+          path => $::path,
+          command => "env ${_debug_env} DEBIAN_FRONTEND=editor EDITOR=$_script PUPPET_ENSURE=${ensure} PUPPET_TITLE=${title} pam-auth-update",
+          unless => $_unless,
+          onlyif => $_onlyif,
+          require => [Package['libpam-runtime'], File[$_script]]
+        }
+      }
+    }
+  }
+
+  $_adhoc_edit_script_for_debian = "/usr/local/lib/epfl_sso/debconf-adhoc-editor"
+  if ($::osfamily == "Debian") {
+    # Le sigh. https://bugs.launchpad.net/ubuntu/+source/pam/+bug/682662
+    # At least we have chicken, uh, Perl (since we are on Debian)
+    ensure_resource("file", ["/usr", "/usr/local", "/usr/local/lib", "/usr/local/lib/epfl_sso"],
+      { ensure => "directory"})
+    file { $_adhoc_edit_script_for_debian:
+      mode => "0700",
+      content => inline_template('#!/usr/bin/perl -w
 
 # Managed and used by Puppet exclusively. Do not edit. Keep scrolling
 
@@ -125,37 +154,10 @@ rename($newfile, $oldfile)
 
 exit 0;
 ')
-        } ~>
-        exec { "perl -c ${_adhoc_edit_script}":
-          path => $::path,
-          refreshonly => true
-        }
-
-        ensure_packages(['libpam-runtime'])
-
-        $_condition_has_module = "grep -q pam_${title}.so /etc/pam.d/common-auth /etc/pam.d/common-password /etc/pam.d/common-account /etc/pam.d/common-session"
-        case $ensure {
-          "present": {
-            $_what_do = "add"
-            $_unless = $_condition_has_module
-            $_onlyif = undef
-          }
-          default: {
-            $_what_do = "remove"
-            $_onlyif = $_condition_has_module
-            $_unless = undef
-          }
-        }
-
-        $_debug_env = $debug ? { undef => "", default => "DEBUG=1" }
-        exec { "Run pam-auth-update to ${what_do} ${title}":
-          path => $::path,
-          command => "env ${_debug_env} DEBIAN_FRONTEND=editor EDITOR=$_adhoc_edit_script PUPPET_ENSURE=${ensure} PUPPET_TITLE=${title} pam-auth-update",
-          unless => $_unless,
-          onlyif => $_onlyif,
-          require => [Package['libpam-runtime'], Exec["perl -c ${_adhoc_edit_script}"]]
-        }
-      }
+    } ~>
+    exec { "perl -c ${_adhoc_edit_script_for_debian}":
+      path => $::path,
+      refreshonly => true
     }
   }
 }
