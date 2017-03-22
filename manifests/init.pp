@@ -54,6 +54,7 @@ class epfl_sso(
   $debug_sssd = undef
 ) inherits epfl_sso::private::params {
   ensure_resource('class', 'quirks')
+  class { "epfl_sso::private::package_sources": }
 
   if ( (versioncmp($::puppetversion, '3') < 0) or
        (versioncmp($::puppetversion, '4') > 0) ) {
