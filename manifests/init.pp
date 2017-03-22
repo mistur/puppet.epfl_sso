@@ -15,9 +15,7 @@
 #                              directories upon first login
 # $needs_nscd::                Whether to install nscd to serve as a second
 #                              layer of cache (for old distros with slow sssd)
-# $pam_success_actions::       What to use as the [success= ] stanza, keyed
-#                              by PAM stage ("auth", "account", "session" or
-#                              "password")
+#
 # === Actions:
 #
 # * Install SSSD and configure it to talk to scoldap.epfl.ch for
@@ -28,8 +26,7 @@ class epfl_sso(
   $allowed_users_and_groups = undef,
   $manage_nsswitch_netgroup = true,
   $enable_mkhomedir = true,
-  $needs_nscd = $::epfl_sso::private::params::needs_nscd,
-  $pam_success_actions = $::epfl_sso::private::params::pam_success_actions
+  $needs_nscd = $::epfl_sso::private::params::needs_nscd
 ) inherits epfl_sso::private::params {
   ensure_resource('class', 'quirks')
 

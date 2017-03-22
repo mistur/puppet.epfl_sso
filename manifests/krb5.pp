@@ -28,10 +28,6 @@
 #
 # $ad_server::   The Active Directory server to use
 #
-# $pam_success_actions::       What to use as the [success= ] stanza, keyed
-#                              by PAM stage ("auth", "account", "session" or
-#                              "password")
-#
 # === Actions:
 #
 # * Create EPFL-compatible /etc/krb5.conf
@@ -48,8 +44,7 @@
 
 class epfl_sso::krb5(
   $ad_server = "ad3.intranet.epfl.ch",
-  $join_domain = undef,
-  $pam_success_actions = $::epfl_sso::private::params::pam_success_actions
+  $join_domain = undef
 ) inherits epfl_sso::private::params {
   if ($::epfl_krb5_resolved == "false") {
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
