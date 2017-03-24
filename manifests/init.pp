@@ -9,23 +9,52 @@
 # $allowed_users_and_groups::  access.conf(5)-style ACL, e.g.
 #                              "user1 user2 (group1) (group2)"
 #                              Note: if you run gdm, user gdm must have access
-# $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in nsswitch.conf
+# $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in
+#                              nsswitch.conf
 # $enable_mkhomedir::          Whether to automatically create users' home
 #                              directories upon first login
 # $needs_nscd::                Whether to install nscd to serve as a second
 #                              layer of cache (for old distros with slow sssd)
-# $pam_success_actions::       What to use as the [success= ] stanza, keyed
-#                              by PAM stage ("auth", "account", "session" or
-#                              "password")
-
+# $auth_source::               Either "AD" or "scoldap"
+# $directory_source::          Either "AD" or "scoldap"
+# $join_domain:: An OU path relative to the Active Directory root,
+#                e.g. "OU=IEL-GE-Servers,OU=IEL-GE,OU=IEL,OU=STI" for
+#                a physical machine, or
+#                "OU=STI,OU=StudentVDI,OU=VDI,OU=DIT-Services Communs"
+#                for a student VM. Undefined if we do not care about
+#                creating / maintaining an object in AD (which precludes
+#                $directory_source = "ad"). Joining the
+#                domain the first time requires credentials with write
+#                access to Active Directory, which can be obtained by
+#                running e.g. "kinit AD243371" (for a physical
+#                machine) or "kinit itvdi-ad-sti" (for a student VM)
+#                as the same user (typically root) as Puppet is
+#                subsequently run as.
+# $sshd_gssapi_auth::    Set to true to allow inbound ssh access with
+#                        Kerberos authentication. See epfl_sso::private::sshd
+#                        for the required client-side configuration
+# $debug_sssd::          Turn extra debugging on in sssd if true
+#
+# === Actions:
+#
+# * Install SSSD and configure it to talk to scoldap.epfl.ch for
+#   directory data (nsswitch) and to the INTRANET Active Directory domain
+#   for (Kerberos-based) authentication (PAM)
+#
 class epfl_sso(
   $allowed_users_and_groups = undef,
   $manage_nsswitch_netgroup = true,
   $enable_mkhomedir = true,
+  $auth_source = "AD",
+  $directory_source = "scoldap",
   $needs_nscd = $::epfl_sso::private::params::needs_nscd,
-  $pam_success_actions = $::epfl_sso::private::params::pam_success_actions
+  $ad_server = $epfl_sso::private::params::ad_server,
+  $join_domain = undef,
+  $sshd_gssapi_auth = undef,
+  $debug_sssd = undef
 ) inherits epfl_sso::private::params {
   ensure_resource('class', 'quirks')
+  class { "epfl_sso::private::package_sources": }
 
   if ( (versioncmp($::puppetversion, '3') < 0) or
        (versioncmp($::puppetversion, '5') > 0) ) {
@@ -34,6 +63,10 @@ class epfl_sso(
 
   validate_legacy("Optional[String]", "validate_string", $allowed_users_and_groups)
   validate_legacy("Stdlib::Compat::Bool", "validate_bool", $manage_nsswitch_netgroup)
+
+  if (($join_domain == undef) and ($directory_source == "AD")) {
+    warn("In order to be an Active Directory LDAP client, one join the domain (obtain a Kerberos keytab). Consider setting $join_domain parameter to epfl_sso")
+  }
 
   package { $epfl_sso::private::params::sssd_packages :
     ensure => present
@@ -49,6 +82,9 @@ class epfl_sso(
     ensure => running,
     enable => true
   }
+
+  include epfl_sso::private::pam
+  epfl_sso::private::pam::module { "sss": }
 
   if ($needs_nscd) {
     package { "nscd":
@@ -116,141 +152,26 @@ class epfl_sso(
     }
   }
 
-  # Mimic "authconfig --enablesssd --enablesssdauth --updateall" using
-  # https://forge.puppetlabs.com/herculesteam/augeasproviders_pam
-  case $::osfamily {
-    'RedHat': {
-        $pam_classes = {
-               'auth' =>  {
-                   'sss auth in system-auth' => { service => 'system-auth'},
-                   'sss auth in password-auth' => { service => 'password-auth'}
-               },
-               'account' =>  {
-                   'sss account in system-auth' => { service => 'system-auth'},
-                   'sss account in password-auth' => { service => 'password-auth'}
-               },
-               'password' =>  {
-                   'sss password in system-auth' => { service => 'system-auth'},
-                   'sss password in password-auth' => { service => 'password-auth'}
-               },
-               'session' =>  {
-                   'sss session in system-auth' => { service => 'system-auth'},
-                   'sss session in password-auth' => { service => 'password-auth'}
-               },
-        }
-        $shoot_winbind_in = {}
-     }
-     'Debian': {
-        $pam_classes = {
-               'auth' =>  {
-                   'sss auth in common-auth' => { service => 'common-auth'},
-               },
-               'account' =>  {
-                   'sss account in common-account' => { service => 'common-account'}
-               },
-               'password' =>  {
-                   'sss password in common-password' => { service => 'common-password'}
-               },
-               'session' =>  {
-                   'sss session in common-session' => { service => 'common-session'},
-                   'sss session in common-session-noninteractive' => { service => 'common-session-noninteractive'}
-               },
-        }
-        $shoot_winbind_in = {
-          'no winbind in common-auth' => {
-            service => 'common-auth',
-            type => 'auth',
-          },
-          'no winbind in common-account' => {
-            service => 'common-acount',
-            type => 'account',
-          },
-          'no winbind in common-password' => {
-            service => 'common-password',
-            type => 'password',
-          },
-          'no winbind in common-session' => {
-            service => 'common-session',
-            type => 'session',
-          },
-          'no winbind in common-session-noninteractive' => {
-            service => 'common-session-noninteractive',
-            type => 'session',
-          }
-        }
-
-    }
-  }
-  create_resources(pam, $pam_classes['auth'],
-      {
-        ensure    => present,
-        type      => 'auth',
-        control   => "[success=${pam_success_actions[auth]} default=ignore]",
-        module    => 'pam_sss.so',
-        arguments => 'use_first_pass',
-        position  => 'before *[type="auth" and module="pam_deny.so"]',
-      })
-  create_resources(pam, $pam_classes['account'],
-      {
-        ensure    => present,
-        type      => 'account',
-        control   => "[default=bad success=${pam_success_actions[account]} user_unknown=ignore]",
-        module    => 'pam_sss.so',
-        position  => 'before *[type="account" and module="pam_permit.so"]',
-      })
-  create_resources(pam, $pam_classes['password'],
-      {
-        ensure    => present,
-        type      => 'password',
-        control   => "[success=${pam_success_actions[password]} new_authtok_reqd=done default=ignore]",
-        module    => 'pam_sss.so',
-        arguments => 'use_authtok',
-        position  => 'before *[type="password" and module="pam_deny.so"]',
-      })
-  create_resources(pam, $pam_classes['session'],
-      {
-        ensure    => present,
-        type      => 'session',
-        control   => 'optional',
-        module    => 'pam_sss.so',
-      })
-
-  create_resources(pam, $shoot_winbind_in,
-      {
-        ensure    => absent,
-        module    => 'pam_winbind.so',
-      })
-
   if ($enable_mkhomedir) {
     class { 'epfl_sso::private::mkhomedir': }
   }
-  #
-  # Show manual login in latest ubuntu in case where the display manager is lightDM
-  #
-  case $::osfamily {
-    'Debian': {
-      if ($::operatingsystemrelease in ['15.04', '15.10', '16.04', '16.10'] and $::operatingsystem == 'Ubuntu') {
-        if (str2bool($::is_lightdm_active)) {
-          file { "/etc/lightdm/lightdm.conf.d" :
-            ensure => directory
-          }
-          file { "/etc/lightdm/lightdm.conf.d/50-show-manual-login.conf" :
-            content => inline_template("#
-# Managed by Puppet, DO NOT EDIT
-# /etc/puppet/modules/epfl_sso/manifests/init.pp
-#
-[Seat:*]
-greeter-show-manual-login=true
-")
-          }~>service { "lightdm" :
-            ensure => running # Restart lightdm if the 50-show-manual-login.conf file changes
-          }
-        } else {
-          notify {"LightDM is not the default display manager, nothing changed.":}
-        }
-      } else {
-        notify {"Enabling the manual greeter on version $::operatingsystemrelease of Ubuntu is not supported. Please check https://github.com/epfl-sti/puppet.epfl_sso":}
-      }
+
+  epfl_sso::private::pam::module { "winbind":
+    ensure => "absent"
+  }
+
+  class { "epfl_sso::private::lightdm":  }
+
+  if ($auth_source == "AD" or $directory_source == "AD") {
+    class { "epfl_sso::private::krb5":
+      join_domain => $join_domain,
+      ad_server => $ad_server
+    }
+  }
+
+  if ($sshd_gssapi_auth != undef) {
+    class { "epfl_sso::private::sshd":
+      enable_gssapi => $sshd_gssapi_auth
     }
   }
 }
