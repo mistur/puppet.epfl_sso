@@ -10,7 +10,7 @@
   "dependencies": [
     {
         "name": "puppetlabs-ntp",
-        "version_requirement": "4.1.x"
+        "version_requirement": ">= 6.0.0"
     },
     {
         "name":"puppetlabs-stdlib",
