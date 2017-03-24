@@ -74,7 +74,7 @@ class epfl_sso::private::pam {
 
         $_debug_env = $debug ? { undef => "", default => "DEBUG=1" }
         $_script = $::epfl_sso::private::pam::_adhoc_edit_script_for_debian
-        exec { "Run pam-auth-update to ${what_do} ${title}":
+        exec { "Run pam-auth-update to ${_what_do} ${title}":
           path => $::path,
           command => "env ${_debug_env} DEBIAN_FRONTEND=editor EDITOR=$_script PUPPET_ENSURE=${ensure} PUPPET_TITLE=${title} pam-auth-update",
           unless => $_unless,
