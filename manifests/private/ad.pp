@@ -35,6 +35,10 @@
 # * Deploy pam_krb5.so in an "opportunistic" configuration: grab a TGT if we can,
 #   but fail gracefully otherwise
 #
+# * Entrust the EPFL-CA with OpenLDAP clients
+#
+# * Add suitable entries to /etc/hosts for ad{1,2,3}.{intranet.,}epfl.ch
+#
 # * Optionally (depending on $join_domain), create or update Active
 #   Directory-compatible credentials in /etc/krb5.keytab . Note that cloning
 #   virtual machines that are registered in the domain suffers from the same
@@ -44,7 +48,8 @@
 
 class epfl_sso::private::ad(
   $ad_server,
-  $join_domain
+  $join_domain,
+  $epflca_cert_url = 'http://certauth.epfl.ch/epflca.cer'
 ) inherits epfl_sso::private::params {
   if ($::epfl_krb5_resolved == "false") {
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
@@ -63,6 +68,12 @@ class epfl_sso::private::ad(
   epfl_sso::private::ad::etchosts_line { "ad1": ip => "128.178.15.227" }
   epfl_sso::private::ad::etchosts_line { "ad2": ip => "128.178.15.228" }
   epfl_sso::private::ad::etchosts_line { "ad3": ip => "128.178.15.229" }
+
+  include epfl_sso::private::ldap
+  epfl_sso::private::ldap::trusted_ca_cert { 'epfl':
+    url => $epflca_cert_url,
+    ensure => 'present'
+  }
 
   case $::osfamily {
     "Debian": {
