@@ -163,7 +163,7 @@ class epfl_sso(
   class { "epfl_sso::private::lightdm":  }
 
   if ($auth_source == "AD" or $directory_source == "AD") {
-    class { "epfl_sso::private::krb5":
+    class { "epfl_sso::private::ad":
       join_domain => $join_domain,
       ad_server => $ad_server
     }
