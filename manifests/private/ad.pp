@@ -50,6 +50,20 @@ class epfl_sso::private::ad(
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
   }
 
+  # Kerberos clients that insist on "authenticating" their peer using a
+  # reverse DNS are in for a surprise for some of the hosts... Among which,
+  # the AD servers themselves :(
+  define etchosts_line($ip) {
+    file_line { "${title} in /etc/hosts":
+      path => "/etc/hosts",
+      line => "${ip} ${title}.intranet.epfl.ch ${title}.epfl.ch",
+      ensure => "present"
+    }
+  }
+  epfl_sso::private::ad::etchosts_line { "ad1": ip => "128.178.15.227" }
+  epfl_sso::private::ad::etchosts_line { "ad2": ip => "128.178.15.228" }
+  epfl_sso::private::ad::etchosts_line { "ad3": ip => "128.178.15.229" }
+
   case $::osfamily {
     "Debian": {
       $_package_of_dig = "dnsutils"
