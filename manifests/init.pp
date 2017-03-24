@@ -15,6 +15,25 @@
 #                              directories upon first login
 # $needs_nscd::                Whether to install nscd to serve as a second
 #                              layer of cache (for old distros with slow sssd)
+# $auth_source::               Either "AD" or "scoldap"
+# $directory_source::          Either "AD" or "scoldap"
+# $join_domain:: An OU path relative to the Active Directory root,
+#                e.g. "OU=IEL-GE-Servers,OU=IEL-GE,OU=IEL,OU=STI" for
+#                a physical machine, or
+#                "OU=STI,OU=StudentVDI,OU=VDI,OU=DIT-Services Communs"
+#                for a student VM. Undefined if we do not care about
+#                creating / maintaining an object in AD (which precludes
+#                $directory_source = "ad"). Joining the
+#                domain the first time requires credentials with write
+#                access to Active Directory, which can be obtained by
+#                running e.g. "kinit AD243371" (for a physical
+#                machine) or "kinit itvdi-ad-sti" (for a student VM)
+#                as the same user (typically root) as Puppet is
+#                subsequently run as.
+# $sshd_gssapi_auth::    Set to true to allow inbound ssh access with
+#                        Kerberos authentication. See epfl_sso::private::sshd
+#                        for the required client-side configuration
+# $debug_sssd::          Turn extra debugging on in sssd if true
 #
 # === Actions:
 #
@@ -26,13 +45,24 @@ class epfl_sso(
   $allowed_users_and_groups = undef,
   $manage_nsswitch_netgroup = true,
   $enable_mkhomedir = true,
-  $needs_nscd = $::epfl_sso::private::params::needs_nscd
+  $auth_source = "AD",
+  $directory_source = "scoldap",
+  $needs_nscd = $::epfl_sso::private::params::needs_nscd,
+  $ad_server = $epfl_sso::private::params::ad_server,
+  $join_domain = undef,
+  $sshd_gssapi_auth = undef,
+  $debug_sssd = undef
 ) inherits epfl_sso::private::params {
   ensure_resource('class', 'quirks')
+  class { "epfl_sso::private::package_sources": }
 
   if ( (versioncmp($::puppetversion, '3') < 0) or
        (versioncmp($::puppetversion, '4') > 0) ) {
     fail("Need version 3.x of Puppet.")
+  }
+
+  if (($join_domain == undef) and ($directory_source == "AD")) {
+    warn("In order to be an Active Directory LDAP client, one join the domain (obtain a Kerberos keytab). Consider setting $join_domain parameter to epfl_sso")
   }
 
   validate_string($allowed_users_and_groups)
@@ -129,31 +159,19 @@ class epfl_sso(
   epfl_sso::private::pam::module { "winbind":
     ensure => "absent"
   }
-  #
-  # Show manual login in latest ubuntu in case where the display manager is lightDM
-  #
-  case $::osfamily {
-    'Debian': {
-      if ($::operatingsystemrelease in ['15.04', '15.10', '16.04', '16.10'] and $::operatingsystem == 'Ubuntu') {
-        if (str2bool($::is_lightdm_active)) {
-          file { "/etc/lightdm/lightdm.conf.d" :
-            ensure => directory
-          }
-          file { "/etc/lightdm/lightdm.conf.d/50-show-manual-login.conf" :
-            content => inline_template("#
-# Managed by Puppet, DO NOT EDIT
-# /etc/puppet/modules/epfl_sso/manifests/init.pp
-#
-[Seat:*]
-greeter-show-manual-login=true
-")
-          }~>service { "lightdm" :
-            ensure => running # Restart lightdm if the 50-show-manual-login.conf file changes
-          }
-        }
-      } else {
-        notify {"Enabling the manual greeter on version $::operatingsystemrelease of Ubuntu is not supported. Please check https://github.com/epfl-sti/puppet.epfl_sso":}
-      }
+
+  class { "epfl_sso::private::lightdm":  }
+
+  if ($auth_source == "AD" or $directory_source == "AD") {
+    class { "epfl_sso::private::krb5":
+      join_domain => $join_domain,
+      ad_server => $ad_server
+    }
+  }
+
+  if ($sshd_gssapi_auth != undef) {
+    class { "epfl_sso::private::sshd":
+      enable_gssapi => $sshd_gssapi_auth
     }
   }
 }

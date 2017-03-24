@@ -1,44 +1,60 @@
 <%= "# This file is managed with Puppet." %>
+<%-
+@auth_provider = (@auth_source == "AD") ? "krb5" : "ldap"
+
+%>
+
 
 [sssd]
 config_file_version = 2
 domains = intranet.epfl.ch
 services = nss, pam
-<%= @debug ? "debug_level = 9" : "" %>
+<%= @debug_sssd ? "debug_level = 9" : "" %>
 
 [nss]
-<%= @debug ? "debug_level = 9" : "" %>
+<%= @debug_sssd ? "debug_level = 9" : "" %>
 
 [pam]
-<%= @debug ? "debug_level = 9" : "" %>
+<%= @debug_sssd ? "debug_level = 9" : "" %>
 
 [domain/intranet.epfl.ch]
-# Unless you know you need referrals, turn them off
+<%= @debug_sssd ? "debug_level = 9" : "" %>
+
 ldap_referrals = false
-# Uncomment if you need offline logins
-# cache_credentials = true
 enumerate = false
 
 id_provider = ldap
-auth_provider = krb5
-chpass_provider = krb5
+auth_provider = <%= @auth_provider %>
+chpass_provider = <%= @auth_provider %>
 access_provider = ldap
 
+<% if @directory_source == "AD" %>
+
+ldap_uri = ldap://<%= @ad_server %>/
+ldap_sasl_mech = gssapi
+ldap_schema = ad
+ldap_account_expire_policy = ad
+ldap_user_search_base = DC=intranet,DC=epfl,DC=ch
+ldap_group_search_base = OU=AppGroups,DC=intranet,DC=epfl,DC=ch???OU=UnitGroups,DC=intranet,DC=epfl,DC=ch??
+ldap_force_upper_case_realm = true
+ldap_use_tokengroups = false
+
+<% else %>
+
 ldap_uri = ldap://scoldap.epfl.ch/
-
 ldap_schema = rfc2307
-
 ldap_user_search_base = O=epfl,C=ch
 ldap_group_search_base = O=epfl,C=ch
 ldap_group_object_class = EPFLGroupOfPersons
 
+<% end %>
+
 ldap_access_order = expire
-ldap_account_expire_policy = ad
 ldap_force_upper_case_realm = true
 
 krb5_realm = INTRANET.EPFL.CH
+krb5_server = intranet.epfl.ch
 
 # Probably required with sssd 1.8.x and newer
 krb5_canonicalize = false
 
-<%= @debug ? "debug_level = 9" : "" %>

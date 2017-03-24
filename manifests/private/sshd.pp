@@ -13,12 +13,12 @@
 #
 # === Parameters:
 #
-# $enable:: true to turn on access, false to turn it off
+# $enable_gssapi:: true to turn on access, false to turn it off
 #
 # === Actions:
 #
-class epfl_sso::krb5::ssh(
-  $enable = true
+class epfl_sso::private::sshd(
+  $enable_gssapi = true
 ) {
   case $::osfamily {
     "RedHat": {
@@ -38,7 +38,7 @@ class epfl_sso::krb5::ssh(
     file_line { "${title} in ${::epfl_sso::krb5::ssh::_sshd_config_file}":
       path => $::epfl_sso::krb5::ssh::_sshd_config_file,
       line => $title,
-      ensure => $::epfl_sso::krb5::ssh::enable ? {
+      ensure => $::epfl_sso::krb5::ssh::enable_gssapi ? {
         true => "present",
         default => "absent"
       }
