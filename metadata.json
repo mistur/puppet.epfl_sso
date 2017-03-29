@@ -10,7 +10,9 @@
   "dependencies": [
     {
         "name": "puppetlabs-ntp",
-        "version_requirement": "< 5.0.0"
+        "version_requirement": ">= 4.2.0",
+        "__4x_version_requirement": "> 5.0.0",
+        "__comment": "See https://github.com/epfl-sti/puppet.quirks/blob/master/manifests/init.pp#L40"
     },
     {
         "name":"puppetlabs-stdlib",
@@ -30,7 +32,7 @@
     },
     {
       "name": "epflsti-quirks",
-      "version_requirement": ">= 0.0.0"
+      "version_requirement": ">= 0.1.0"
     }
   ]
 }
