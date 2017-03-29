@@ -61,8 +61,13 @@ class epfl_sso(
     fail("Need version 3.x or 4.x of Puppet.")
   }
 
-  validate_legacy("Optional[String]", "validate_string", $allowed_users_and_groups)
-  validate_legacy("Stdlib::Compat::Bool", "validate_bool", $manage_nsswitch_netgroup)
+  if (versioncmp($::puppetversion, '4') < 0) {
+    validate_string($allowed_users_and_groups)
+    validate_bool($manage_nsswitch_netgroup)
+  } else {
+    validate_legacy("Optional[String]", "validate_string", $allowed_users_and_groups)
+    validate_legacy("Stdlib::Compat::Bool", "validate_bool", $manage_nsswitch_netgroup)
+  }
 
   if (($join_domain == undef) and ($directory_source == "AD")) {
     warn("In order to be an Active Directory LDAP client, one join the domain (obtain a Kerberos keytab). Consider setting $join_domain parameter to epfl_sso")
