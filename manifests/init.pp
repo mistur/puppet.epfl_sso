@@ -70,7 +70,7 @@ class epfl_sso(
   }
 
   if (($join_domain == undef) and ($directory_source == "AD")) {
-    warn("In order to be an Active Directory LDAP client, one must join the domain (obtain a Kerberos keytab). Consider setting $join_domain parameter to epfl_sso")
+    warn("In order to be an Active Directory LDAP client, one must join the domain (obtain a Kerberos keytab). Consider passing the $join_domain parameter to the epfl_sso class")
   }
 
   package { $epfl_sso::private::params::sssd_packages :
