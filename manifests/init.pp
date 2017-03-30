@@ -79,6 +79,8 @@ class epfl_sso(
   file { '/etc/sssd/sssd.conf' :
     ensure  => present,
     content => template('epfl_sso/sssd.conf.erb'),
+    # The template above uses variables $debug_sssd, $auth_source and
+    # $ad_server
     owner   => root,
     group   => root,
     mode    => '0600'
