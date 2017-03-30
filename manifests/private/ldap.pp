@@ -30,6 +30,8 @@ class epfl_sso::private::ldap {
       $cert_retrieve_command = inline_template('true ; set -e -x; wget -O <%= @tmpcer %> <%= @url %> ; openssl x509 -inform der -outform pem -in <%= @tmpcer %> -out <%= @cert_pem_path %>; rm <%= @tmpcer %>')
     }
 
+    $wget_package = "wget"
+    ensure_packages($wget_package)
 
     case $::osfamily {
       'Debian': {
@@ -52,7 +54,8 @@ class epfl_sso::private::ldap {
           } ->
           exec { $cert_retrieve_command:
             path => $::path,
-            creates => $cert_pem_path
+            creates => $cert_pem_path,
+            require => Package[$wget_package]
           } ~> Exec["update-ca-certificates"]
           
         } else {
@@ -67,7 +70,8 @@ class epfl_sso::private::ldap {
         if ($ensure == "present") {
           exec { $cert_retrieve_command:
             path => $::path,
-            creates => $cert_pem_path
+            creates => $cert_pem_path,
+            require => Package[$wget_package]
           } ~>
           exec { "${certutil_base_cmd} -n ${title} -t TCu,Cu,Tuw -A -a -i ${cert_pem_path}":
             path => $::path,

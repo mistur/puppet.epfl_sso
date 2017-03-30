@@ -61,12 +61,15 @@ class epfl_sso(
     fail("Need version 3.x or 4.x of Puppet.")
   }
 
+  # There appears to be no way to get validate_legacy to validate Booleans on
+  # Puppet 4.9.4 as found on CentOS 7.3.1611:
+  if ($manage_nsswitch_netgroup != !(! $manage_nsswitch_netgroup)) {
+    fail("$manage_nsswitch_netgroup should be a Boolean (found ${manage_nsswitch_netgroup} instead)")
+  }
   if (versioncmp($::puppetversion, '4') < 0) {
     validate_string($allowed_users_and_groups)
-    validate_bool($manage_nsswitch_netgroup)
   } else {
     validate_legacy("Optional[String]", "validate_string", $allowed_users_and_groups)
-    validate_legacy("Stdlib::Compat::Bool", "validate_bool", $manage_nsswitch_netgroup)
   }
 
   if (($join_domain == undef) and ($directory_source == "AD")) {

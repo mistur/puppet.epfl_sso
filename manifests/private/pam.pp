@@ -32,6 +32,11 @@ class epfl_sso::private::pam {
             $_authconfig_enable_args = "--enablewinbindauth"
             $_authconfig_disable_args = "--disablewinbindauth"
           }
+          'access': {
+            # Undocumented, but visible with authconfig --help:
+            $_authconfig_enable_args = "--enablepamaccess"
+            $_authconfig_disable_args = "--disablepamacccess"
+          }
           default: {
             $_enable_disable = $ensure ? { "present" => "enable", default => "disable" }
             fail("Don't know how to tell authconfig to ${_enable_disable} ${title}")
