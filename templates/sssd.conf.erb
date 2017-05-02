@@ -48,6 +48,9 @@ ldap_schema = rfc2307
 ldap_user_search_base = O=epfl,C=ch
 ldap_group_search_base = O=epfl,C=ch
 ldap_group_object_class = EPFLGroupOfPersons
+# We manage access control with pam_access.so instead:
+ldap_access_order = filter
+ldap_access_filter = (objectclass=person)
 
 <% end %>
 
