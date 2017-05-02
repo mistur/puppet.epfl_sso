@@ -69,6 +69,10 @@ class epfl_sso(
 
   class { "epfl_sso::private::package_sources": }
   class { "epfl_sso::private::login_shells": }
+  if (str2bool($::is_lightdm_active)) {
+    class { "epfl_sso::private::lightdm":  }
+  }
+
 
   package { $epfl_sso::private::params::sssd_packages :
     ensure => present
@@ -127,8 +131,6 @@ class epfl_sso(
   epfl_sso::private::pam::module { "winbind":
     ensure => "absent"
   }
-
-  class { "epfl_sso::private::lightdm":  }
 
   if ($auth_source == "AD" or $directory_source == "AD") {
     class { "epfl_sso::private::ad":
