@@ -26,7 +26,8 @@ enumerate = false
 id_provider = ldap
 auth_provider = <%= @auth_provider %>
 chpass_provider = <%= @auth_provider %>
-access_provider = ldap
+# Access control provided by pam_access.so:
+access_provider = simple
 
 <% if @directory_source == "AD" %>
 
@@ -38,8 +39,6 @@ ldap_user_search_base = DC=intranet,DC=epfl,DC=ch
 ldap_group_search_base = OU=AppGroups,DC=intranet,DC=epfl,DC=ch???OU=UnitGroups,DC=intranet,DC=epfl,DC=ch??
 ldap_force_upper_case_realm = true
 ldap_use_tokengroups = false
-ldap_access_order = expire
-ldap_account_expire_policy = ad
 
 <% else %>
 
