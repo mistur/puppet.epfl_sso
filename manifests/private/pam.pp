@@ -6,7 +6,7 @@ class epfl_sso::private::pam {
   # Ensure that a module is present / absent using the distribution's tools
   define module(
     $ensure = "present",
-    $debug = undef
+    $debug = true
   ) {
     case $::osfamily {
       'RedHat': {
@@ -78,22 +78,34 @@ class epfl_sso::private::pam {
         }
 
         $_debug_env = $debug ? { undef => "", default => "DEBUG=1" }
-        $_script = $::epfl_sso::private::pam::_adhoc_edit_script_for_debian
-        exec { "Run pam-auth-update to ${_what_do} ${title}":
-          path => $::path,
-          command => "env ${_debug_env} DEBIAN_FRONTEND=editor EDITOR=$_script PUPPET_ENSURE=${ensure} PUPPET_TITLE=${title} pam-auth-update",
-          unless => $_unless,
-          onlyif => $_onlyif,
-          require => [Package['libpam-runtime'], File[$_script]]
+
+        if (member($::epfl_sso::private::params::pam_modules_managed_by_distro, $title)) {
+          $_script = $::epfl_sso::private::pam::_adhoc_edit_script_for_debian
+          exec { "Run pam-auth-update to ${_what_do} ${title}":
+            path => $::path,
+            command => "env ${_debug_env} DEBIAN_FRONTEND=editor EDITOR=$_script PUPPET_ENSURE=${ensure} PUPPET_TITLE=${title} pam-auth-update",
+            unless => $_unless,
+            onlyif => $_onlyif,
+            require => [Package['libpam-runtime'], File[$_script]]
+          }
+        } elsif ($title == "access") {
+          file_line { "pam_access in /etc/pam.d/common-account":
+            path => "/etc/pam.d/common-account",
+            ensure => $ensure,
+            line => "account required pam_access.so    # This line is managed by Puppet",
+            after => "__at the bottom of the file__"
+          }
+        } else {
+          fail("Don't know how to ${_what_do} PAM module ${title} under ${::operatingsystem} ${::operatingsystemmajrelease}")
         }
       }
     }
   }
 
-  $_adhoc_edit_script_for_debian = "/usr/local/lib/epfl_sso/debconf-adhoc-editor"
   if ($::osfamily == "Debian") {
     # Le sigh. https://bugs.launchpad.net/ubuntu/+source/pam/+bug/682662
     # At least we have chicken, uh, Perl (since we are on Debian)
+    $_adhoc_edit_script_for_debian = "/usr/local/lib/epfl_sso/debconf-adhoc-editor"
     ensure_resource("file", ["/usr", "/usr/local", "/usr/local/lib", "/usr/local/lib/epfl_sso"],
       { ensure => "directory"})
     file { $_adhoc_edit_script_for_debian:

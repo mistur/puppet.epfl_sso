@@ -15,7 +15,7 @@ class epfl_sso::private::params {
 
   case $::osfamily {
     'Debian': {
-      $pam_modules_managed_by_distro = []
+      $pam_modules_managed_by_distro = ["krb5", "mkhomedir", "sss", "winbind" ]
     }
   }
 }
