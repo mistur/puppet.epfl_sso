@@ -38,6 +38,8 @@ ldap_user_search_base = DC=intranet,DC=epfl,DC=ch
 ldap_group_search_base = OU=AppGroups,DC=intranet,DC=epfl,DC=ch???OU=UnitGroups,DC=intranet,DC=epfl,DC=ch??
 ldap_force_upper_case_realm = true
 ldap_use_tokengroups = false
+ldap_access_order = expire
+ldap_account_expire_policy = ad
 
 <% else %>
 
@@ -49,7 +51,6 @@ ldap_group_object_class = EPFLGroupOfPersons
 
 <% end %>
 
-ldap_access_order = expire
 ldap_force_upper_case_realm = true
 
 krb5_realm = INTRANET.EPFL.CH
