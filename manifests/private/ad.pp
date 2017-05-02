@@ -28,6 +28,9 @@
 #
 # $ad_server::   The Active Directory server to use
 #
+# $epflca_cert_url:: Where to find the certificate for the EPFL CA
+#                (necessary for ldapsearch to work)
+#
 # === Actions:
 #
 # * Create EPFL-compatible /etc/krb5.conf
