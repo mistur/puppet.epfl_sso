@@ -104,7 +104,7 @@ class epfl_sso::private::ad(
   }
 
   if ($join_domain) {
-    $_msktutil_command = inline_template('msktutil -c --server <%= @ad_server %> -b "<%= @join_domain %>" --no-reverse-lookups --enctypes 24 --computer-name <%= @hostname.upcase %> --service <%= @hostname.downcase %>')
+    $_msktutil_command = inline_template('msktutil -c --server <%= @ad_server %> -b "<%= @join_domain %>" --no-reverse-lookups --enctypes 24 --computer-name <%= @hostname.upcase %> --service host/<%= @hostname.downcase %>')
     exec { "${_msktutil_command}":
       path => $::path,
       command => "/bin/echo 'mkstutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-sti\"> first'; false",
