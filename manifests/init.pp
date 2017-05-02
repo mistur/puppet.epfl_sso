@@ -53,28 +53,26 @@ class epfl_sso(
   $sshd_gssapi_auth = undef,
   $debug_sssd = undef
 ) inherits epfl_sso::private::params {
-  ensure_resource('class', 'quirks')
-  class { "epfl_sso::private::package_sources": }
-
   if ( (versioncmp($::puppetversion, '3') < 0) or
        (versioncmp($::puppetversion, '5') > 0) ) {
     fail("Need version 3.x or 4.x of Puppet.")
   }
 
-  # There appears to be no way to get validate_legacy to validate Booleans on
-  # Puppet 4.9.4 as found on CentOS 7.3.1611:
-  if ($manage_nsswitch_netgroup != !(! $manage_nsswitch_netgroup)) {
-    fail("$manage_nsswitch_netgroup should be a Boolean (found ${manage_nsswitch_netgroup} instead)")
-  }
-  if (versioncmp($::puppetversion, '4') < 0) {
-    validate_string($allowed_users_and_groups)
-  } else {
-    validate_legacy("Optional[String]", "validate_string", $allowed_users_and_groups)
-  }
+  assert_bool($manage_nsswitch_netgroup)
+  assert_string($allowed_users_and_groups)
 
   if (($join_domain == undef) and ($directory_source == "AD")) {
     warn("In order to be an Active Directory LDAP client, one must join the domain (obtain a Kerberos keytab). Consider passing the $join_domain parameter to the epfl_sso class")
   }
+
+  ensure_resource('class', 'quirks')
+
+  class { "epfl_sso::private::package_sources": }
+  class { "epfl_sso::private::login_shells": }
+  if (str2bool($::is_lightdm_active)) {
+    class { "epfl_sso::private::lightdm":  }
+  }
+
 
   package { $epfl_sso::private::params::sssd_packages :
     ensure => present
@@ -104,40 +102,6 @@ class epfl_sso(
 
   # A properly configured clock is necessary for Kerberos:
   ensure_resource('class', 'ntp')
-
-  # When a user tries to ssh into a machine that doesn't have their shell,
-  # figuring it all out from the logs is quite a challenge.
-  # Note: EPFL's default shell can be changed here:
-  #       https://cadiwww.epfl.ch/cgi-bin/accountprefs/
-  # As of Feb, 2017 the options are
-  # 
-  # /bin/sh
-  # /bin/bash
-  # /bin/tcsh
-  # /bin/zsh
-  # /bin/csh
-  # /bin/bash2
-  # /bin/ash
-  # /bin/bsh
-  # /sbin/nologin                
-
-  # This seems to be the lowest common denominator across distributions:
-  ensure_packages(['tcsh', 'zsh', 'bsh'])
-  case $::osfamily {
-    "Debian": {
-      ensure_packages(['ash', 'csh'])  # In addition to above
-    }
-    "RedHat": {
-      package { "ash":
-        provider => "rpm",
-        source => "http://ftp.uni-erlangen.de/mirrors/opensuse/distribution/11.4/repo/oss/suse/x86_64/ash-1.6.1-146.2.x86_64.rpm"
-      }
-      file { "/bin/csh":
-        ensure => "link",
-        target => "tcsh"
-      }
-    }
-  }
 
   if ($allowed_users_and_groups != undef) {
     class { 'epfl_sso::private::access':
@@ -169,8 +133,6 @@ class epfl_sso(
   epfl_sso::private::pam::module { "winbind":
     ensure => "absent"
   }
-
-  class { "epfl_sso::private::lightdm":  }
 
   if ($auth_source == "AD" or $directory_source == "AD") {
     class { "epfl_sso::private::ad":
