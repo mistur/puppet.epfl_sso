@@ -83,26 +83,14 @@ class epfl_sso::private::ad(
 
   case $::osfamily {
     "Debian": {
-      $_package_of_dig = "dnsutils"
-      $_other_packages_to_install = [ "krb5-user", "libpam-krb5", "msktutil" ] 
+      ensure_packages([ "krb5-user", "libpam-krb5", "msktutil" ])
     }
     "RedHat": {
-      $_package_of_dig = "bind-utils"
       # https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Managing_Smart_Cards/installing-kerberos.html
-      $_other_packages_to_install = [ "krb5-workstation", "krb5-libs", "pam_krb5", "msktutil" ]
+      ensure_packages(["krb5-workstation", "krb5-libs", "pam_krb5", "msktutil"])
     }
     default: {
       fail("Not sure how to install Kerberos dependencies on ${::osfamily}-family Linux")
-    }
-  }
-
-  $_all_packages = union([$_package_of_dig], $_other_packages_to_install)
-  ensure_packages([$_all_packages])
-  if (! $::epfl_krb5_resolved) {
-    Package[$_package_of_dig] ~>
-    exec { "echo 'dig was installed - Please run Puppet again'; exit 2":
-      path => $::path,
-      refreshonly => true
     }
   }
 

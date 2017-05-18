@@ -1,19 +1,11 @@
 require 'logger'
+require 'resolv'
 
 $logger = Logger.new(STDERR)
 
 Facter.add('epfl_krb5_resolved') do
-  setcode do
-    begin
-       value = `dig -t srv _kerberos._tcp.intranet.epfl.ch`
-       # $logger.log(1, value)
-       if value == nil then
-         "undefined"
-       else
-         !! value.index("IN\tSRV\t")
-       end
-    rescue Errno::ENOENT
-       "undefined"
-    end
-  end
+  resolver = Resolv::DNS.new
+  has_srv = ! resolver.getresources("_kerberos._tcp.intranet.epfl.ch",
+                                    Resolv::DNS::Resource::IN::SRV).empty?
+  setcode do has_srv end
 end
