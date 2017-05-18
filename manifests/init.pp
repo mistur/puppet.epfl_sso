@@ -59,7 +59,9 @@ class epfl_sso(
   }
 
   assert_bool($manage_nsswitch_netgroup)
-  assert_string($allowed_users_and_groups)
+  if ($allowed_users_and_groups != undef) {
+    assert_string($allowed_users_and_groups)
+  }
 
   if (($join_domain == undef) and ($directory_source == "AD")) {
     warn("In order to be an Active Directory LDAP client, one must join the domain (obtain a Kerberos keytab). Consider passing the $join_domain parameter to the epfl_sso class")
