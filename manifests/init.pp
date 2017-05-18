@@ -37,10 +37,23 @@
 #
 # === Actions:
 #
-# * Install SSSD and configure it to talk to scoldap.epfl.ch for
-#   directory data (nsswitch) and to the INTRANET Active Directory domain
-#   for (Kerberos-based) authentication (PAM)
+# Unless otherwise stated, all actions are for the Linux platform only.
 #
+# * (Linux if either $auth_source or $directory_source is "AD", *and*
+#   Mac OS X unconditionally) Set up client configuration for Active
+#   Directory's Kerberos (krb5.conf) and LDAP (SSL certificates)
+#
+# * Install SSSD and configure it to access directory data (nsswitch)
+#   and for authentication data (PAM) from either scoldap.epfl.ch or
+#   Active Directory, depending on the respective settings of
+#   $directory_source and $auth_source
+#
+# * Ensure that customarily used login shells at EPFL are installed,
+#   and optionally set up an Access Control List (ACL) based on
+#   pam_access (SSSD's similar feature is not used)
+#
+# * Configure sshd for inbound Kerberos authentication
+# 
 class epfl_sso(
   $allowed_users_and_groups = undef,
   $manage_nsswitch_netgroup = true,
@@ -49,7 +62,7 @@ class epfl_sso(
   $directory_source = "scoldap",
   $needs_nscd = $::epfl_sso::private::params::needs_nscd,
   $ad_server = $epfl_sso::private::params::ad_server,
-  $join_domain = undef,
+  $join_domain = false,
   $sshd_gssapi_auth = undef,
   $debug_sssd = undef
 ) inherits epfl_sso::private::params {
@@ -63,89 +76,32 @@ class epfl_sso(
     assert_string($allowed_users_and_groups)
   }
 
-  if (($join_domain == undef) and ($directory_source == "AD")) {
+  if ($join_domain and ($::kernel == "Darwin")) {
+    fail("Joining Active Directory domain on Mac OS X is not supported")
+  } elsif (($join_domain == undef) and ($directory_source == "AD")) {
     warn("In order to be an Active Directory LDAP client, one must join the domain (obtain a Kerberos keytab). Consider passing the $join_domain parameter to the epfl_sso class")
   }
 
-  ensure_resource('class', 'quirks')
-
-  class { "epfl_sso::private::package_sources": }
-  class { "epfl_sso::private::login_shells": }
-  if (str2bool($::is_lightdm_active)) {
-    class { "epfl_sso::private::lightdm":  }
-  }
-
-
-  package { $epfl_sso::private::params::sssd_packages :
-    ensure => present
-  } ->
-  file { '/etc/sssd/sssd.conf' :
-    ensure  => present,
-    content => template('epfl_sso/sssd.conf.erb'),
-    # The template above uses variables $debug_sssd, $auth_source and
-    # $ad_server
-    owner   => root,
-    group   => root,
-    mode    => '0600'
-  } ~>
-  service { 'sssd':
-    ensure => running,
-    enable => true
-  }
-
-  include epfl_sso::private::pam
-  epfl_sso::private::pam::module { "sss": }
-
-  if ($needs_nscd) {
-    package { "nscd":
-      ensure => present
+  case $::kernel {
+    'Darwin': {
+      class { "epfl_sso::private::ad":
+        join_domain => false,
+        ad_server   => $ad_server
+      }
     }
-  }
-
-  # A properly configured clock is necessary for Kerberos:
-  ensure_resource('class', 'ntp')
-
-  if ($allowed_users_and_groups != undef) {
-    class { 'epfl_sso::private::access':
-      allowed_users_and_groups => $allowed_users_and_groups
-    }
-  }
-
-  name_service {['passwd', 'group']:
-    lookup => ['compat', 'sss']
-  }
-
-  # This is necessary for RH7 and CentOS 7, and probably
-  # does not hurt for older versions:
-  name_service { 'initgroups':
-    # https://bugzilla.redhat.com/show_bug.cgi?id=751450
-    lookup => ['files [SUCCESS=continue] sss']
-  }
-
-  if ($manage_nsswitch_netgroup) {
-    name_service { 'netgroup':
-      lookup => ['files', 'sss']
-    }
-  }
-
-  if ($enable_mkhomedir) {
-    class { 'epfl_sso::private::mkhomedir': }
-  }
-
-  epfl_sso::private::pam::module { "winbind":
-    ensure => "absent"
-  }
-
-  if ($auth_source == "AD" or $directory_source == "AD") {
-    class { "epfl_sso::private::ad":
-      join_domain => $join_domain,
-      ad_server => $ad_server
-    }
-  }
-
-  if ($sshd_gssapi_auth != undef) {
-    class { "epfl_sso::private::sshd":
-      enable_gssapi => $sshd_gssapi_auth
+    'Linux': {
+      class { "epfl_sso::private::init_linux":
+        allowed_users_and_groups => $allowed_users_and_groups,
+        manage_nsswitch_netgroup => $manage_nsswitch_netgroup,
+        enable_mkhomedir         => $enable_mkhomedir,
+        auth_source              => $auth_source,
+        directory_source         => $directory_source,
+        needs_nscd               => $needs_nscd,
+        ad_server                => $ad_server,
+        join_domain              => $join_domain,
+        sshd_gssapi_auth         => $sshd_gssapi_auth,
+        debug_sssd               => $debug_sssd
+      }
     }
   }
 }

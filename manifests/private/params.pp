@@ -18,4 +18,14 @@ class epfl_sso::private::params {
       $pam_modules_managed_by_distro = ["krb5", "mkhomedir", "sss", "winbind" ]
     }
   }
+
+  $hosts_file = $::osfamily ? {
+    "Darwin" => "/private/etc/hosts",
+    default  => "/etc/hosts"
+  }
+
+  $krb5_conf_file = $::osfamily ? {
+    "Darwin" => "/private/etc/krb5.conf",
+    default  => "/etc/krb5.conf"
+  }
 }

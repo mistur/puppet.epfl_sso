@@ -62,8 +62,9 @@ class epfl_sso::private::ad(
   # reverse DNS are in for a surprise for some of the hosts... Among which,
   # the AD servers themselves :(
   define etchosts_line($ip) {
-    file_line { "${title} in /etc/hosts":
-      path => "/etc/hosts",
+    $hosts_file = $::epfl_sso::private::params::hosts_file
+    file_line { "${title} in ${hosts_file}":
+      path => $hosts_file,
       line => "${ip} ${title}.intranet.epfl.ch ${title}.epfl.ch",
       ensure => "present"
     }
@@ -81,33 +82,44 @@ class epfl_sso::private::ad(
     ensure => 'present'
   }
 
-  case $::osfamily {
-    "Debian": {
-      ensure_packages([ "krb5-user", "libpam-krb5", "msktutil" ])
-    }
-    "RedHat": {
-      # https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Managing_Smart_Cards/installing-kerberos.html
-      ensure_packages(["krb5-workstation", "krb5-libs", "pam_krb5", "msktutil"])
-    }
-    default: {
-      fail("Not sure how to install Kerberos dependencies on ${::osfamily}-family Linux")
-    }
-  }
-
-  if ($join_domain) {
-    $_msktutil_command = inline_template('msktutil --verbose -c --server <%= @ad_server %> -b "<%= @join_domain %>" --no-reverse-lookups --enctypes 24 --computer-name <%= @hostname.upcase %> --service host/<%= @hostname.downcase %>')
-    exec { "${_msktutil_command}":
-      path => $::path,
-      command => "/bin/echo 'mkstutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-sti\"> first'; false",
-      unless => $_msktutil_command,
-      require => [Package[$_all_packages], File["/etc/krb5.conf"]]
-    }
-  }
-
-  file { "/etc/krb5.conf":
+  file { $::epfl_sso::private::params::krb5_conf_file:
     content => template("epfl_sso/krb5.conf.erb")
   }
 
-  include epfl_sso::private::pam
-  epfl_sso::private::pam::module { "krb5": }
+  case $::kernel {
+    'Darwin': {
+      notice("Mac OS X detected - Skip setup of Active Directory users, groups and authentication")
+    }
+    'Linux': {
+      case $::osfamily {
+        "Debian": {
+          ensure_packages([ "krb5-user", "libpam-krb5"])
+        }
+        "RedHat": {
+          # https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Managing_Smart_Cards/installing-kerberos.html
+          ensure_packages(["krb5-workstation", "krb5-libs", "pam_krb5"])
+        }
+        default: {
+          fail("Not sure how to install Kerberos client-side support on ${::osfamily}-family Linux")
+        }
+      }
+
+      if ($join_domain) {
+        ensure_packages("msktutil")
+        $_msktutil_command = inline_template('msktutil --verbose -c --server <%= @ad_server %> -b "<%= @join_domain %>" --no-reverse-lookups --enctypes 24 --computer-name <%= @hostname.upcase %> --service host/<%= @hostname.downcase %>')
+        exec { "${_msktutil_command}":
+          path => $::path,
+          command => "/bin/echo 'mkstutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-YOURSCHOOL\"> first'; false",
+          unless => $_msktutil_command,
+          require => [Package[$_all_packages], File["/etc/krb5.conf"]]
+        }
+      }
+
+      include epfl_sso::private::pam
+      epfl_sso::private::pam::module { "krb5": }
+    }
+    default: {
+      fail("Unsupported operating system: ${::kernel}")
+    }
+  }
 }
