@@ -4,6 +4,7 @@ class epfl_sso::private::ldap {
   if ($::kernel == 'Linux') {
     # Mac OS X has curl by default
     ensure_packages("curl")
+    Package["curl"]
     -> Anchor["epfl_sso::private::ldap::tools_installed"]
   }
   case $::osfamily {
@@ -11,12 +12,14 @@ class epfl_sso::private::ldap {
       $trusted_cert_dir = "/usr/share/ca-certificates/epfl"
       $cert_extension = "crt"
       ensure_packages("ca-certificates")
+      Package["ca-certificates"]
       -> Anchor["epfl_sso::private::ldap::tools_installed"]
     }
     'RedHat': {
       $trusted_cert_dir = "/etc/openldap/certs"
       $cert_extension = "pem"
       ensure_packages("nss-tools")
+      Package["nss-tools"]
       -> Anchor["epfl_sso::private::ldap::tools_installed"]
     }
     'Darwin': {
