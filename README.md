@@ -32,11 +32,11 @@ puppet apply -e "class { 'epfl_sso::nfs': }"
   1. Go in the puppet folder: `cd /etc/puppet/module`
   1. Remove `epfl_sso` (but it should have been done from step 1)
   1. Clone the repo here: `git clone https://github.com/epfl-sti/puppet.epfl_sso.git /etc/puppet/module/epfl_sso`
-  1. Apply one-shot step#3
+  1. Apply [one-shot](#apply-one-shot) step 3.
 
 ### The tar.gz method
   1. Be sure to remove previous version: `puppet module uninstall epflsti-epfl_sso` (add `--ignore-changes` if needed)
   1. Clone the repo: `git clone https://github.com/epfl-sti/puppet.epfl_sso.git`
   1. tar the repo: `tar -czvf epfl_sso_latest.tar.gz puppet.epfl_sso`
   1. Install the module: `puppet module install epfl_sso_latest.tar.gz`
-  1. Apply one-shot step#3
+  1. Apply [one-shot](#apply-one-shot) step 3.
