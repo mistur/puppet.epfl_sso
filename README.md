@@ -7,14 +7,16 @@ UNIX single sign-on using EPFL's LDAP and Kerberos servers
 
   1. `puppet module install epflsti-epfl_sso` # Install the module
   2. `puppet apply -e "class { 'quirks': }  class { 'quirks::pluginsync': }"` # Repeat if prompted to
-  3. ```
-puppet apply -e "class { 'epfl_sso':
-     allowed_users_and_groups => 'user1 user2 (group1) (group2)',
-     join_domain => 'OU=IEL-GE-Servers,OU=IEL-GE,OU=IEL,OU=STI',
-     auth_source => 'AD',
-     directory_source => 'AD'
-}"
-```
+  3. Finaly, apply the epfl_sso class:  
+    ```
+    puppet apply -e "class { 'epfl_sso':
+         allowed_users_and_groups => 'user1 user2 (group1) (group2)',
+         join_domain => 'OU=IEL-GE-Servers,OU=IEL-GE,OU=IEL,OU=STI',
+         auth_source => 'AD',
+         directory_source => 'AD'
+    }"
+    ```
+
 _Note:_ user1 & user2 are gaspar usernames and group1 and group2 are [EPFL groups](https://groups.epfl.ch) which are visible in ldap.epfl.ch.
 
 
