@@ -16,7 +16,7 @@ UNIX single sign-on using EPFL's LDAP and Kerberos servers
       }"
 </pre>
 
-_Note:_ `user1` & `user2` are GASPAR usernames and `group1` and `group2` are [EPFL groups](https://groups.epfl.ch) which are visible in ldap.epfl.ch.
+_Note:_ `user1` & `user2` are GASPAR usernames (or local account) and `group1` and `group2` are [EPFL groups](https://groups.epfl.ch) which are visible in ldap.epfl.ch.
 
 
 And if you want NFS connectivity too:
