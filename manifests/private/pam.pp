@@ -10,6 +10,7 @@ class epfl_sso::private::pam {
   ) {
     case $::osfamily {
       'RedHat': {
+        ensure_packages('authconfig')
         # authconfig is prone to wreaking havoc in a variety of
         # configuration files; make sure we apply our own overrides last
         ensure_resource('anchor', 'epfl_sso::authconfig_has_run')
@@ -50,11 +51,13 @@ class epfl_sso::private::pam {
         if ($ensure == "present") {
           exec { "authconfig ${_authconfig_enable_args} --updateall":
             path => $::path,
+            require => Package["authconfig"],
             unless => "grep ${_pam_module_match} /etc/pam.d/system-auth-ac"
           } -> Anchor['epfl_sso::authconfig_has_run']
         } else {
           exec { "authconfig ${_authconfig_disable_args} --updateall":
             path => $::path,
+            require => Package["authconfig"],
             onlyif => "grep ${_pam_module_match} /etc/pam.d/system-auth-ac"
           } -> Anchor['epfl_sso::authconfig_has_run']
         }
