@@ -27,7 +27,8 @@
 #                subsequently run as.
 #
 # $renew_domain_credentials:: Whether to periodically renew the
-#                Kerberos keytab entry. RECOMMENDED unless this
+#                Kerberos keytab entry. Has no effect under "puppet
+#                agent"; RECOMMENDED for "puppet apply" unless this
 #                machine is a clonable master that shares the same
 #                host name with a number of clones.
 #
@@ -40,8 +41,8 @@
 #
 # * Create EPFL-compatible /etc/krb5.conf
 #
-# * Deploy pam_krb5.so in an "opportunistic" configuration: grab a TGT if we can,
-#   but fail gracefully otherwise
+# * Deploy pam_krb5.so in an "opportunistic" configuration: grab a TGT
+#   if we can, but fail gracefully otherwise
 #
 # * Entrust the EPFL-CA with OpenLDAP clients
 #
@@ -53,6 +54,10 @@
 #   kind of issues as on the Windows platform; as each VM instance will try
 #   to update the Kerberos password for the AD entry, they will quickly diverge
 #   since only one of them will succeed to do so.
+#
+# * If running "puppet apply", and if both $join_domain and
+#   $renew_domain_credentials are true, set up a crontab to renew the
+#   keytab daily
 
 class epfl_sso::private::ad(
   $ad_server,
@@ -120,11 +125,11 @@ class epfl_sso::private::ad(
           require => [Package["msktutil"], File["/etc/krb5.conf"]]
         }
 
-        if ($renew_domain_credentials) {
+        if ($renew_domain_credentials and ! $servername) {
           package { "moreutils":
             ensure => "installed"  # For the chronic command
           } ->
-          file { "/etc/cron.daily/renew-AD-keytab.sh":
+          file { "/etc/cron.daily/renew-AD-keytab":
             mode => "0755",
             content => "#!/bin/sh
 # Renew keytab, lest Active Directory forget about us after 90 days
