@@ -9,14 +9,20 @@
 # $allowed_users_and_groups::  access.conf(5)-style ACL, e.g.
 #                              "user1 user2 (group1) (group2)"
 #                              Note: if you run gdm, user gdm must have access
+#
 # $manage_nsswitch_netgroup::  Whether to manage the netgroup entry in
 #                              nsswitch.conf
+#
 # $enable_mkhomedir::          Whether to automatically create users' home
 #                              directories upon first login
+#
 # $needs_nscd::                Whether to install nscd to serve as a second
 #                              layer of cache (for old distros with slow sssd)
+#
 # $auth_source::               Either "AD" or "scoldap"
+#
 # $directory_source::          Either "AD" or "scoldap"
+#
 # $join_domain:: An OU path relative to the Active Directory root,
 #                e.g. "OU=IEL-GE-Servers,OU=IEL-GE,OU=IEL,OU=STI" for
 #                a physical machine, or
@@ -33,6 +39,7 @@
 # $sshd_gssapi_auth::    Set to true to allow inbound ssh access with
 #                        Kerberos authentication. See epfl_sso::private::sshd
 #                        for the required client-side configuration
+#
 # $debug_sssd::          Turn extra debugging on in sssd if true
 #
 # === Actions:
@@ -52,7 +59,8 @@
 #   and optionally set up an Access Control List (ACL) based on
 #   pam_access (SSSD's similar feature is not used)
 #
-# * Configure sshd for inbound Kerberos authentication
+# * Configure sshd for inbound Kerberos authentication (if
+#   $sshd_gssapi_auth is true, which by default it isn't)
 # 
 class epfl_sso(
   $allowed_users_and_groups = undef,

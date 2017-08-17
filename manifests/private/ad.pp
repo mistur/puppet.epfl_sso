@@ -7,9 +7,9 @@
 # https://fuhm.net/linux-and-active-directory/
 #
 # Unlike Windows, this approach does *not* preclude cloning - A number
-# of VMs can share the same Kerberos credentials with no issues.
-# *However*, one should *not* run this class periodically in this use
-# case (or alternatively, all clones should have a different hostname)
+# of VMs can share the same Kerberos credentials with no issues,
+# provided $renew_domain_credentials is set to false (or
+# alternatively, all clones should have a different hostname)
 #
 # === Parameters:
 #
