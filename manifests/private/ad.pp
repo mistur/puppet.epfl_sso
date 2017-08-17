@@ -111,7 +111,7 @@ class epfl_sso::private::ad(
           path => $::path,
           command => "/bin/echo 'mkstutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-YOURSCHOOL\"> first'; false",
           unless => $_msktutil_command,
-          require => [Package[$_all_packages], File["/etc/krb5.conf"]]
+          require => [Package["msktutil"], File["/etc/krb5.conf"]]
         }
       }
 
