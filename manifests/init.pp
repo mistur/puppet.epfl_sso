@@ -36,6 +36,13 @@
 #                machine) or "kinit itvdi-ad-sti" (for a student VM)
 #                as the same user (typically root) as Puppet is
 #                subsequently run as.
+#
+# $renew_domain_credentials:: Whether to periodically renew the
+#                Kerberos keytab entry. RECOMMENDED unless this
+#                machine is a clonable master that shares the same
+#                host name with a number of clones. Ignored if
+#                $join_domain is not true.
+#
 # $sshd_gssapi_auth::    Set to true to allow inbound ssh access with
 #                        Kerberos authentication. See epfl_sso::private::sshd
 #                        for the required client-side configuration
@@ -71,6 +78,7 @@ class epfl_sso(
   $needs_nscd = $::epfl_sso::private::params::needs_nscd,
   $ad_server = $epfl_sso::private::params::ad_server,
   $join_domain = false,
+  $renew_domain_credentials = true,
   $sshd_gssapi_auth = undef,
   $debug_sssd = undef
 ) inherits epfl_sso::private::params {
@@ -107,6 +115,7 @@ class epfl_sso(
         needs_nscd               => $needs_nscd,
         ad_server                => $ad_server,
         join_domain              => $join_domain,
+        renew_domain_credentials => $renew_domain_credentials,
         sshd_gssapi_auth         => $sshd_gssapi_auth,
         debug_sssd               => $debug_sssd
       }

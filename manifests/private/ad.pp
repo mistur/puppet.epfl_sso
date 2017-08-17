@@ -26,6 +26,11 @@
 #                as the same user (typically root) as Puppet is
 #                subsequently run as.
 #
+# $renew_domain_credentials:: Whether to periodically renew the
+#                Kerberos keytab entry. RECOMMENDED unless this
+#                machine is a clonable master that shares the same
+#                host name with a number of clones.
+#
 # $ad_server::   The Active Directory server to use
 #
 # $epflca_cert_url:: Where to find the certificate for the EPFL CA
@@ -52,7 +57,8 @@
 class epfl_sso::private::ad(
   $ad_server,
   $join_domain,
-  $epflca_cert_url = 'http://certauth.epfl.ch/epflca.cer'
+  $epflca_cert_url = 'http://certauth.epfl.ch/epflca.cer',
+  $renew_domain_credentials = true
 ) inherits epfl_sso::private::params {
   if ($::epfl_krb5_resolved == "false") {
     fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
@@ -112,6 +118,22 @@ class epfl_sso::private::ad(
           command => "/bin/echo 'mkstutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-YOURSCHOOL\"> first'; false",
           unless => $_msktutil_command,
           require => [Package["msktutil"], File["/etc/krb5.conf"]]
+        }
+
+        if ($renew_domain_credentials) {
+          package { "moreutils":
+            ensure => "installed"  # For the chronic command
+          } ->
+          file { "/etc/cron.daily/renew-AD-keytab.sh":
+            mode => "0755",
+            content => "#!/bin/sh
+# Renew keytab, lest Active Directory forget about us after 90 days
+#
+# Managed by Puppet, DO NOT EDIT
+
+chronic ${_msktutil_command}
+"
+            }
         }
       }
 
