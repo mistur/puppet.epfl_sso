@@ -41,6 +41,8 @@
 #
 # * Create EPFL-compatible /etc/krb5.conf
 #
+# * Set GSSAPIAuthentication to 'yes' in /etc/ssh/ssh_config
+#
 # * Deploy pam_krb5.so in an "opportunistic" configuration: grab a TGT
 #   if we can, but fail gracefully otherwise
 #
@@ -96,6 +98,15 @@ class epfl_sso::private::ad(
   file { $::epfl_sso::private::params::krb5_conf_file:
     content => template("epfl_sso/krb5.conf.erb")
   }
+
+  $ssh_config = "/etc/ssh/ssh_config"
+  file_line { "GSSAPIAuthentication 'yes' in ${ssh_config}":
+    path => $ssh_config,
+    line => "    GSSAPIAuthentication yes",
+    match => "GSSAPIAuthentication",
+    ensure => "present"
+  }
+
 
   case $::kernel {
     'Darwin': {
