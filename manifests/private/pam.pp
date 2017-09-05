@@ -86,7 +86,7 @@ class epfl_sso::private::pam {
           $_script = $::epfl_sso::private::pam::_adhoc_edit_script_for_debian
           exec { "Run pam-auth-update to ${_what_do} ${title}":
             path => $::path,
-            command => "env ${_debug_env} DEBIAN_FRONTEND=editor EDITOR=$_script PUPPET_ENSURE=${ensure} PUPPET_TITLE=${title} pam-auth-update",
+            command => "env ${_debug_env} DEBIAN_FRONTEND=editor EDITOR=$_script PUPPET_ENSURE=${ensure} PUPPET_TITLE=${title} pam-auth-update --force",
             unless => $_unless,
             onlyif => $_onlyif,
             require => [Package['libpam-runtime'], File[$_script]]
