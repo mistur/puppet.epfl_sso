@@ -1,4 +1,3 @@
-# coding: utf-8
 # Class: epfl_sso::private::ad
 #
 # Integrate this computer into EPFL's Active Directory
@@ -68,7 +67,7 @@ class epfl_sso::private::ad(
   $renew_domain_credentials = true
 ) inherits epfl_sso::private::params {
   if ($::epfl_krb5_resolved == "false") {
-    fail("Unable to resolve KDC in DNS – You must use the EPFL DNS servers.")
+    fail("Unable to resolve KDC in DNS - You must use the EPFL DNS servers.")
   }
 
   # Kerberos clients that insist on "authenticating" their peer using a
