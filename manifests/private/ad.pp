@@ -70,6 +70,10 @@ class epfl_sso::private::ad(
     fail("Unable to resolve KDC in DNS - You must use the EPFL DNS servers.")
   }
 
+  if ($::fqdn !~ /[.]/) {
+    fail("Your FQDN isn't (${::fqdn}) - Refusing to create bogus AD entry")
+  }
+
   # Kerberos clients that insist on "authenticating" their peer using a
   # reverse DNS are in for a surprise for some of the hosts... Among which,
   # the AD servers themselves :(
@@ -127,7 +131,7 @@ class epfl_sso::private::ad(
 
       if ($join_domain) {
         ensure_packages("msktutil")
-        $_msktutil_command = inline_template('msktutil --verbose -c --server <%= @ad_server %> -b "<%= @join_domain %>" --no-reverse-lookups --enctypes 24 --computer-name <%= @hostname.upcase %> --service host/<%= @hostname.downcase %>')
+        $_msktutil_command = inline_template('msktutil --verbose -c --server <%= @ad_server %> -b "<%= @join_domain %>" --no-reverse-lookups --enctypes 24 --computer-name <%= @hostname.upcase %> --service host/<%= @fqdn.downcase %>')
         exec { "${_msktutil_command}":
           path => $::path,
           command => "/bin/echo 'mkstutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-YOURSCHOOL\"> first'; false",
