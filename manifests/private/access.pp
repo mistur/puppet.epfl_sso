@@ -6,11 +6,14 @@
 #
 # $allowed_users_and_groups::  access.conf(5)-style ACL, e.g. "user1 user2 (group1) (group2)"
 class epfl_sso::private::access(
-  $allowed_users_and_groups = ''
+  $allowed_users_and_groups = '',
   ) {
   file { '/etc/security/access.conf':
     ensure  => present,
-    content => template('epfl_sso/access.conf.erb'),
+    content => inline_template('# This file is managed with Puppet.
+
+- : ALL EXCEPT root <%= @allowed_users_and_groups %> : ALL
+'),
     owner   => root,
     group   => root,
     mode    => '0644'
