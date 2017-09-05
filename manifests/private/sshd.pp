@@ -35,14 +35,14 @@ class epfl_sso::private::sshd(
   }
 
   define sshd_config_line() {
-    file_line { "${title} in ${::epfl_sso::krb5::ssh::_sshd_config_file}":
-      path => $::epfl_sso::krb5::ssh::_sshd_config_file,
+    file_line { "${title} in ${::epfl_sso::private::sshd::_sshd_config_file}":
+      path => $::epfl_sso::private::sshd::_sshd_config_file,
       line => $title,
-      ensure => $::epfl_sso::krb5::ssh::enable_gssapi ? {
+      ensure => $::epfl_sso::private::sshd::enable_gssapi ? {
         true => "present",
         default => "absent"
       }
-    } ~> Service[$epfl_sso::krb5::ssh::_sshd_service]
+    } ~> Service[$epfl_sso::private::sshd::_sshd_service]
   }
   sshd_config_line { ['KerberosAuthentication yes',
                       'GSSAPIAuthentication yes',
