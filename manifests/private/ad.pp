@@ -139,7 +139,8 @@ class epfl_sso::private::ad(
           require => [Package["msktutil"], File["/etc/krb5.conf"]]
         }
 
-        if ($renew_domain_credentials and ! $servername) {
+        if ($renew_domain_credentials and
+            $epfl_sso::private::params::is_puppet_apply) {
           package { "moreutils":
             ensure => "installed"  # For the chronic command
           } ->
@@ -152,7 +153,7 @@ class epfl_sso::private::ad(
 
 chronic ${_msktutil_command}
 "
-            }
+          }
         }
       }
 

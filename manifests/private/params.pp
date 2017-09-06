@@ -1,6 +1,7 @@
 class epfl_sso::private::params {
   $krb5_domain = "INTRANET.EPFL.CH"
   $ad_server = "ad3.intranet.epfl.ch"
+  $is_puppet_apply = ! $::servername
 
   case "${::operatingsystem} ${::operatingsystemrelease}" {
          'Ubuntu 12.04': {
