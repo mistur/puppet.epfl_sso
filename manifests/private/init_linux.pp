@@ -52,10 +52,7 @@ class epfl_sso::private::init_linux(
 
   if ($allowed_users_and_groups != undef) {
     class { 'epfl_sso::private::access':
-      allowed_users_and_groups => $directory_source ? {
-        "scoldap"  => downcase($allowed_users_and_groups),
-        default    => $allowed_users_and_groups
-      }
+      allowed_users_and_groups => $allowed_users_and_groups
     }
   }
 
