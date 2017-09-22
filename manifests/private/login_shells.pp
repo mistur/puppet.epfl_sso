@@ -27,7 +27,7 @@ class epfl_sso::private::login_shells {
     "RedHat": {
       package { "ash":
         provider => "rpm",
-        source => "http://ftp.uni-erlangen.de/mirrors/opensuse/distribution/11.4/repo/oss/suse/x86_64/ash-1.6.1-146.2.x86_64.rpm"
+        source => "http://ftp.tu-chemnitz.de/pub/linux/dag/redhat/el5/en/x86_64/rpmforge/RPMS/ash-0.3.8-20.el5.rf.x86_64.rpm"
       }
       file { "/bin/csh":
         ensure => "link",
