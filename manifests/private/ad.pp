@@ -102,14 +102,23 @@ class epfl_sso::private::ad(
     content => template("epfl_sso/krb5.conf.erb")
   }
 
-  $ssh_config = "/etc/ssh/ssh_config"
-  file_line { "GSSAPIAuthentication 'yes' in ${ssh_config}":
-    path => $ssh_config,
-    line => "    GSSAPIAuthentication yes",
-    match => "GSSAPIAuthentication",
-    ensure => "present"
+  define gssapi_auth_line() {
+    file_line { "GSSAPIAuthentication 'yes' in ${title}":
+      path => $title,
+      line => "    GSSAPIAuthentication yes",
+      match => "GSSAPIAuthentication",
+      ensure => "present",
+      multiple => true
+    }
   }
 
+  $ssh_config = "/etc/ssh/ssh_config"
+  $sshd_config = "/etc/ssh/sshd_config"
+  gssapi_auth_line { $ssh_config: }
+  gssapi_auth_line { $sshd_config: }  ~>
+  service { "sshd":
+    ensure => "running"
+  }
 
   case $::kernel {
     'Darwin': {
