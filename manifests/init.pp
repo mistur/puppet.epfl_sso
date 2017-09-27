@@ -77,7 +77,7 @@ class epfl_sso(
   $directory_source = "scoldap",
   $needs_nscd = $::epfl_sso::private::params::needs_nscd,
   $ad_server = $epfl_sso::private::params::ad_server,
-  $join_domain = false,
+  $join_domain = undef,
   $renew_domain_credentials = true,
   $sshd_gssapi_auth = undef,
   $debug_sssd = undef
