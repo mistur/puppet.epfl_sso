@@ -114,8 +114,8 @@ class epfl_sso::private::ad(
 
   $ssh_config = "/etc/ssh/ssh_config"
   $sshd_config = "/etc/ssh/sshd_config"
-  gssapi_auth_line { $ssh_config: }
-  gssapi_auth_line { $sshd_config: }  ~>
+  epfl_sso::private::ad::gssapi_auth_line { $ssh_config: }
+  epfl_sso::private::ad::gssapi_auth_line { $sshd_config: }  ~>
   service { "sshd":
     ensure => "running"
   }
