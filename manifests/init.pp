@@ -83,8 +83,8 @@ class epfl_sso(
   $debug_sssd = undef
 ) inherits epfl_sso::private::params {
   if ( (versioncmp($::puppetversion, '3') < 0) or
-       (versioncmp($::puppetversion, '5') > 0) ) {
-    fail("Need version 3.x or 4.x of Puppet.")
+       (versioncmp($::puppetversion, '6') > 0) ) {
+    fail("Need version 3.x thru 5.x of Puppet.")
   }
 
   assert_bool($manage_nsswitch_netgroup)
