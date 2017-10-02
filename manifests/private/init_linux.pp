@@ -83,13 +83,7 @@ class epfl_sso::private::init_linux(
 
   if ($auth_source == "AD" or $directory_source == "AD") {
     class { "epfl_sso::private::ad":
-      join_domain              => $join_domain ? {
-          undef   => $auth_source ? {
-            "AD" => true,
-            default => false
-          },
-          default => $join_domain
-      },
+      join_domain              => $join_domain,
       renew_domain_credentials => $renew_domain_credentials,
       ad_server                => $ad_server
     }
