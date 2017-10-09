@@ -140,11 +140,12 @@ class epfl_sso::private::ad(
 
       if ($join_domain) {
         ensure_packages("msktutil")
-        $_msktutil_command = inline_template('msktutil --verbose -c --server <%= @ad_server %> -b "<%= @join_domain %>" --no-reverse-lookups --enctypes 24 --computer-name <%= @hostname.upcase %> --service host/<%= @fqdn.downcase %>')
-        exec { "${_msktutil_command}":
+        $_msktutil_create_command = inline_template('msktutil --verbose -c --server <%= @ad_server %> -b "<%= @join_domain %>" --no-reverse-lookups --enctypes 24 --computer-name <%= @hostname.upcase %> --service host/<%= @fqdn.downcase %>')
+        $_msktutil_renew_command = inline_template('msktutil --verbose --auto-update --enctypes 24 --computer-name <%= @hostname.upcase %>')
+        exec { $_msktutil_create_command:
           path => $::path,
           command => "/bin/echo 'mkstutil -c failed - Please run kinit <ADSciper or \"itvdi-ad-YOURSCHOOL\"> first'; false",
-          unless => $_msktutil_command,
+          unless => $_msktutil_renew_command,
           require => [Package["msktutil"], File["/etc/krb5.conf"]]
         }
 
@@ -160,7 +161,7 @@ class epfl_sso::private::ad(
 #
 # Managed by Puppet, DO NOT EDIT
 
-chronic ${_msktutil_command}
+chronic ${_msktutil_renew_command}
 "
           }
         }
