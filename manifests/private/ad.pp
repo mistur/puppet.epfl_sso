@@ -78,10 +78,9 @@ class epfl_sso::private::ad(
   # reverse DNS are in for a surprise for some of the hosts... Among which,
   # the AD servers themselves :(
   define etchosts_line($ip) {
-    $hosts_file = $::epfl_sso::private::params::hosts_file
-    file_line { "${title} in ${hosts_file}":
-      path => $hosts_file,
-      line => "${ip} ${title}.intranet.epfl.ch ${title}.epfl.ch",
+    host { "${title}.intranet.epfl.ch":
+      host_aliases => $title,
+      ip => $ip,
       ensure => "present"
     }
   }

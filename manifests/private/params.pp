@@ -20,11 +20,6 @@ class epfl_sso::private::params {
     }
   }
 
-  $hosts_file = $::osfamily ? {
-    "Darwin" => "/private/etc/hosts",
-    default  => "/etc/hosts"
-  }
-
   $krb5_conf_file = $::osfamily ? {
     "Darwin" => "/private/etc/krb5.conf",
     default  => "/etc/krb5.conf"
