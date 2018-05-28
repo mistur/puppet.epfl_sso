@@ -63,7 +63,7 @@
 class epfl_sso::private::ad(
   $ad_server,
   $join_domain,
-  $epflca_cert_url = 'http://certauth.epfl.ch/epflca.cer',
+  $epflca_cert_url = 'https://certauth.epfl.ch/epflca.cer',
   $renew_domain_credentials = true
 ) inherits epfl_sso::private::params {
   if ($::epfl_krb5_resolved == "false") {
